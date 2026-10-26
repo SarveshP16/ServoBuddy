@@ -57,6 +57,8 @@
 ### Expenses
 - **One form** for fuel, services, rego, insurance, repairs and parts,
   tolls, parking, car wash and anything else. Attach receipt photos.
+- **Titles with one-tap suggestions**: "Battery", "Tyres", "Rego renewal",
+  "CTP green slip", "U91"… or type your own.
 - **Fuel fills** record litres, odometer and "filled to full". The price per
   litre updates as you type.
 - **Fuel economy** (L/100 km) and fuel cost per km, worked out the

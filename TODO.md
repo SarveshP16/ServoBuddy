@@ -19,7 +19,7 @@
 - [ ] When a Rego expense is logged, ask for the current odometer (prefilled with the last reading).
 - [ ] Save it as an odometer reading, so service due estimates stay current once a year at least.
 
-## 4. Titles for all expense types
+## 4. Titles for all expense types — done
 
 Today only services have a title ("New battery" ends up in Notes). Give every category a title field with one-tap suggestions:
 
@@ -35,8 +35,8 @@ Today only services have a title ("New battery" ends up in Notes). Give every ca
 | Car wash | Wash, Detail |
 | Other | Fine, Accessories, Roadside assist membership |
 
-- [ ] Suggestions are a starting point; any title can be typed.
-- [ ] Show the title in lists instead of just the category name.
+- [x] Suggestions are a starting point; any title can be typed.
+- [x] Show the title in lists instead of just the category name.
 
 ## 5. Rego and CTP checklist
 

@@ -6,6 +6,21 @@ follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Titles for every expense**, not just services. A "What was it?" field
+  sits under the category, with one-tap suggestions for each: E10 or U91
+  for fuel, Battery or Tyres for repairs, Rego renewal or CTP green slip for
+  rego, and so on. Any title can be typed instead. Recurring costs get the
+  same suggestions.
+- The Expenses list shows an expense's title, with its category underneath
+  ("Battery", "Repairs & parts · 1 Aug").
+
+### Changed
+
+- Switching category on the form clears a title picked from the old
+  category's suggestions, but keeps one you typed yourself.
+
 ## [1.2.0] - 2026-10-26
 
 A new look, local backups, and an app that works fully offline.

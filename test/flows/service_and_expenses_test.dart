@@ -84,9 +84,8 @@ void main() {
     await tester.pump();
     expect(find.text('Enter the amount'), findsOneWidget);
 
-    final fields = find.byType(TextFormField);
-    await tester.enterText(fields.at(0), '73.50');
-    await tester.enterText(fields.at(1), '40');
+    await tester.enterText(amountField, '73.50');
+    await tester.enterText(litresField, '40');
     await tester.pump();
     expect(find.text(r'Filled to full · $1.84/L'), findsOneWidget);
     await tester.tap(find.text('Save expense'));

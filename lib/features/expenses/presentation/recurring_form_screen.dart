@@ -11,7 +11,6 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/calendar.dart';
 import '../../../core/widgets/app_buttons.dart';
 import '../../../core/widgets/app_snackbar.dart';
-import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/choice_pill.dart';
 import '../../../core/widgets/confirm_dialog.dart';
 import '../../../core/widgets/date_field.dart';
@@ -25,6 +24,7 @@ import '../domain/expense_category.dart';
 import '../domain/recurrence.dart';
 import 'recurring_labels.dart';
 import 'widgets/amount_field.dart';
+import 'widgets/title_field.dart';
 
 /// Add a recurring cost, or edit one when [recurringId] is given.
 class RecurringFormScreen extends ConsumerStatefulWidget {
@@ -161,10 +161,10 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
                       onSelected: (cat) => setState(() => _category = cat),
                     ),
                     const FormFieldLabel('Description'),
-                    AppTextField(
+                    TitleField(
                       controller: _title,
+                      category: _category,
                       hint: 'e.g. Linkt top-up (optional)',
-                      textCapitalization: TextCapitalization.sentences,
                     ),
                     const FormFieldLabel('Amount'),
                     AmountField(

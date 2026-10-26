@@ -217,6 +217,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                             ? '${e.label} — ${garage.vehicle(e.vehicleId)?.shortName ?? ''}'
                             : e.label,
                         subtitle: [
+                          if (e.title != null) e.category.label,
                           formatRelativeDay(e.date, today),
                           ?e.fuelDetail,
                         ].join(' · '),

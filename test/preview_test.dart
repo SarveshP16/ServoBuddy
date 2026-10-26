@@ -60,8 +60,9 @@ void main() {
       await shot(tester, '6_expenses');
       await tester.tap(find.byTooltip('Log expense'));
       await app.settle(tester);
-      await tester.enterText(find.byType(TextFormField).first, '68.40');
-      await tester.enterText(find.byType(TextFormField).at(1), '37.6');
+      await tester.enterText(titleField, 'U91');
+      await tester.enterText(amountField, '68.40');
+      await tester.enterText(litresField, '37.6');
       FocusManager.instance.primaryFocus?.unfocus();
       await app.settle(tester);
       await shot(tester, '5_log_expense');

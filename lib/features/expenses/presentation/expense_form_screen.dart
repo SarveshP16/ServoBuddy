@@ -28,9 +28,11 @@ import '../application/expense_actions.dart';
 import '../application/recurring_actions.dart';
 import '../domain/expense_category.dart';
 import '../domain/recurrence.dart';
+import '../domain/title_suggestions.dart';
 import 'recurring_labels.dart';
 import 'widgets/amount_field.dart';
 import 'widgets/fuel_fill_fields.dart';
+import 'widgets/title_field.dart';
 
 /// Log an expense, or edit one when [expenseId] is given.
 ///
@@ -79,10 +81,6 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   String? _receiptPath;
   bool _saving = false;
 
-  /// A description the form has no field for outside Service ("Linkt
-  /// top-up" from a recurring cost), kept as-is on save.
-  String? _carriedTitle;
-
   /// Set when logging a recurring cost's due payment.
   RecurringExpense? _fromRecurring;
 
@@ -115,8 +113,8 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
           : formatMoneyExact(e.amountCents).substring(1).replaceAll(',', '');
       _litres.text = e.litres?.toString() ?? '';
       _odometer.text = e.odometerKm == null ? '' : formatInt(e.odometerKm!);
+      // A service done against a schedule takes the schedule's name.
       _title.text = e.scheduleId == null ? (e.title ?? '') : '';
-      if (e.category != ExpenseCategory.service) _carriedTitle = e.title;
       _notes.text = e.notes ?? '';
       return;
     }
@@ -131,8 +129,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
       _amount.text = formatMoneyExact(r.amountCents)
           .substring(1)
           .replaceAll(',', '');
-      _carriedTitle = r.title;
-      if (r.category == ExpenseCategory.service) _title.text = r.title ?? '';
+      _title.text = r.title ?? '';
       return;
     }
     _vehicleId = garage.isActive(widget.initialVehicleId ?? -1)
@@ -155,6 +152,15 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   }
 
   bool get _costOptional => _category == ExpenseCategory.service;
+
+  /// Switching category drops a title picked from the old category's
+  /// suggestions ("Battery" isn't a toll), but keeps one typed by hand.
+  void _setCategory(ExpenseCategory c) => setState(() {
+    if (_category.titleSuggestions.contains(_title.text.trim())) {
+      _title.clear();
+    }
+    _category = c;
+  });
 
   String? _validateAmount(String? v) {
     final text = v?.trim() ?? '';
@@ -182,9 +188,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
       category: _category,
       amountCents: parseMoneyToCents(_amount.text) ?? 0,
       date: _date,
-      title: !isService
-          ? _carriedTitle
-          : schedule?.name ?? (customTitle.isEmpty ? null : customTitle),
+      title: schedule?.name ?? (customTitle.isEmpty ? null : customTitle),
       notes: notes.isEmpty ? null : notes,
       receiptPath: _receiptPath,
       litres: isFuel ? parseDecimal(_litres.text) : null,
@@ -335,7 +339,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                       options: ExpenseCategory.values,
                       selected: _category,
                       labelOf: (c) => c.label,
-                      onSelected: (c) => setState(() => _category = c),
+                      onSelected: _setCategory,
                     ),
                     if (isService) ...[
                       const FormFieldLabel('Service'),
@@ -349,12 +353,15 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                       ),
                       if (_scheduleId == null) ...[
                         const SizedBox(height: 10),
-                        AppTextField(
+                        TitleField(
                           controller: _title,
+                          category: _category,
                           hint: 'What was done (e.g. Logbook service)',
-                          textCapitalization: TextCapitalization.sentences,
                         ),
                       ],
+                    ] else ...[
+                      const FormFieldLabel('What was it?'),
+                      TitleField(controller: _title, category: _category),
                     ],
                     FormFieldLabel(
                       _costOptional ? 'Cost (optional)' : 'Amount',

@@ -70,7 +70,7 @@ void main() {
       await tester.tap(find.text('Edit'));
       await app.settle(tester);
       expect(find.text('LOG EXPENSE'), findsOneWidget);
-      await tester.enterText(find.byType(TextFormField).first, '131.50');
+      await tester.enterText(amountField, '131.50');
       await tester.tap(find.text('Save expense'));
       await app.settle(tester);
 
@@ -94,7 +94,7 @@ void main() {
 
       await tester.ensureVisible(find.text('Tolls'));
       await tester.tap(find.text('Tolls'));
-      await tester.enterText(find.byType(TextFormField).first, '40');
+      await tester.enterText(amountField, '40');
       await tester.ensureVisible(find.text('Repeat this expense'));
       await tester.tap(
         find.descendant(

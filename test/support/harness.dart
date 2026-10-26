@@ -13,8 +13,28 @@ import 'package:servobuddy/core/files/image_store.dart';
 import 'package:servobuddy/core/notifications/notification_service.dart';
 import 'package:servobuddy/core/providers.dart';
 import 'package:servobuddy/features/backup/application/backup_actions.dart';
+import 'package:servobuddy/features/expenses/presentation/widgets/amount_field.dart';
+import 'package:servobuddy/features/expenses/presentation/widgets/fuel_fill_fields.dart';
+import 'package:servobuddy/features/expenses/presentation/widgets/title_field.dart';
 import 'package:servobuddy/features/settings/data/app_settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// The expense form's fields, found by what they are rather than their order
+/// (the title field sits above the amount for every category).
+final amountField = find.descendant(
+  of: find.byType(AmountField),
+  matching: find.byType(TextFormField),
+);
+final litresField = find
+    .descendant(
+      of: find.byType(FuelFillFields),
+      matching: find.byType(TextFormField),
+    )
+    .first;
+final titleField = find.descendant(
+  of: find.byType(TitleField),
+  matching: find.byType(TextFormField),
+);
 
 /// The app's fixed "now" in tests: a Wednesday afternoon.
 final testNow = DateTime(2026, 9, 23, 14, 30);
