@@ -6,8 +6,8 @@
 
 <p align="center">
   <b>Your car's logbook, in your pocket.</b><br>
-  Track fuel, services, rego and every running cost. Get reminded before
-  anything is due. Works fully offline, with no account.
+  Services, rego, insurance and every dollar your car costs, in one place.
+  Reminders before anything falls due. Offline, private, no account.
 </p>
 
 <p align="center">
