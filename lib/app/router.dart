@@ -59,6 +59,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             initialScheduleId: int.tryParse(q['schedule'] ?? ''),
             recurringId: int.tryParse(q['recurring'] ?? ''),
             recurringDue: DateTime.tryParse(q['due'] ?? ''),
+            initialTitle: q['title'],
+            renewsRego: q['renew'] == '1',
           );
         },
       ),

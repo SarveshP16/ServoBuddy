@@ -26,7 +26,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.open() : super(driftDatabase(name: 'servobuddy'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -38,6 +38,12 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(vehicles, vehicles.status);
         await m.addColumn(vehicles, vehicles.soldDate);
         await m.addColumn(vehicles, vehicles.salePriceCents);
+      }
+      // v4: tyre and battery fitting dates.
+      if (from < 4) {
+        await m.addColumn(vehicles, vehicles.tyresFitted);
+        await m.addColumn(vehicles, vehicles.tyresFittedKm);
+        await m.addColumn(vehicles, vehicles.batteryFitted);
       }
     },
     // Deleting a car must take its expenses, readings and schedules with it.

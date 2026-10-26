@@ -10,15 +10,19 @@ Vehicle vehicle({
   String make = 'Toyota',
   String model = 'Corolla',
   bool isPrimary = true,
+  int year = 2019,
   DateTime? regoExpiry,
   DateTime? insuranceExpiry,
   FuelType fuelType = FuelType.e10,
   VehicleStatus status = VehicleStatus.active,
+  DateTime? tyresFitted,
+  int? tyresFittedKm,
+  DateTime? batteryFitted,
 }) => Vehicle(
   id: id,
   make: make,
   model: model,
-  year: 2019,
+  year: year,
   bodyType: BodyType.sedan,
   fuelType: fuelType,
   rego: '7XY-2KL',
@@ -30,6 +34,9 @@ Vehicle vehicle({
   status: status,
   soldDate: null,
   salePriceCents: null,
+  tyresFitted: tyresFitted,
+  tyresFittedKm: tyresFittedKm,
+  batteryFitted: batteryFitted,
 );
 
 Expense expense({

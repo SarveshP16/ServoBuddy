@@ -110,16 +110,22 @@ class OdometerInput extends StatelessWidget {
     super.key,
     required this.controller,
     required this.hint,
+    this.label = 'Odometer',
+    this.help,
   });
 
   final TextEditingController controller;
   final String hint;
+  final String label;
+
+  /// A line under the field saying why it's asked for.
+  final String? help;
 
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const FormFieldLabel('Odometer'),
+      FormFieldLabel(label),
       AppTextField(
         controller: controller,
         hint: hint,
@@ -132,6 +138,14 @@ class OdometerInput extends StatelessWidget {
             ? 'Whole km only'
             : null,
       ),
+      if (help != null)
+        Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Text(
+            help!,
+            style: AppText.sub.copyWith(color: context.colors.muted),
+          ),
+        ),
     ],
   );
 }

@@ -79,9 +79,28 @@
   "~3 weeks" adjusts as you drive more or less.
 - Marking a service done logs it as an expense and resets the reminder.
 
+### Rego renewal checklist
+- Six weeks before rego is due, the car's page and Home show the steps:
+  **CTP green slip → pink slip (cars 5+ years old) → pay rego**.
+- Tap **Log** on a step to record it with its cost. Paying the rego moves the
+  car's rego date on a year, ready for next time.
+- Logging any rego expense also asks for the odometer, which keeps service
+  estimates accurate.
+
+### Tyres and battery
+- Record when they were fitted, even if they were part of a service bill.
+  Logging an expense titled "Tyres" or "Battery" sets it for you.
+- See how old they are and when to replace them: batteries at about 4 years,
+  tyres at 5 years or 40,000 km, whichever your driving reaches first.
+- They show in **Coming up** and send reminders as replacement nears.
+
+### Home screen widget
+- The next thing due and this month's spend, on your home screen. Tap it to
+  open that car.
+
 ### Notifications
 - Service, rego and insurance: a reminder 2 weeks before and on the day, at
-  9 am.
+  9 am. Tyres and battery as they near replacement.
 - **NSW CTP green slip** (3 weeks before rego) and **pink slip** (when the
   inspection window opens, for cars 5+ years old). Both follow the rego date.
 - A **Coming up** list on Home shows everything due soon across all cars.
@@ -109,9 +128,13 @@
 | <img src="test/preview/1_home.png" width="190"> | <img src="test/preview/3_detail.png" width="190"> | <img src="test/preview/6_expenses.png" width="190"> | <img src="test/preview/7_settings.png" width="190"> |
 | <img src="test/preview/1_home_dark.png" width="190"> | <img src="test/preview/3_detail_dark.png" width="190"> | <img src="test/preview/6_expenses_dark.png" width="190"> | <img src="test/preview/7_settings_dark.png" width="190"> |
 
-| Vehicles | Log expense | Recurring costs | Sold car |
+| Rego renewal | Rego on Home | Tyres & battery | Log expense |
 |:---:|:---:|:---:|:---:|
-| <img src="test/preview/13_vehicles_sold.png" width="190"> | <img src="test/preview/5_log_expense.png" width="190"> | <img src="test/preview/15_recurring_tab.png" width="190"> | <img src="test/preview/14_sold_detail.png" width="190"> |
+| <img src="test/preview/17_rego_checklist.png" width="190"> | <img src="test/preview/16_home_rego.png" width="190"> | <img src="test/preview/18_tyres_battery.png" width="190"> | <img src="test/preview/5_log_expense.png" width="190"> |
+
+| Vehicles | Recurring costs | Sold car |
+|:---:|:---:|:---:|
+| <img src="test/preview/13_vehicles_sold.png" width="190"> | <img src="test/preview/15_recurring_tab.png" width="190"> | <img src="test/preview/14_sold_detail.png" width="190"> |
 
 ## Download and install
 
@@ -134,16 +157,23 @@ ServoBuddy is an Android app (Android 7.0 or newer).
    reminders**, and pick presets like "Logbook service" or "Oil change".
    Enter when each was last done.
 3. **Log expenses.** Tap the yellow **+** on Home. Pick the car and the
-   category, enter the amount. For fuel, add litres and the odometer to get
-   economy figures.
+   category, tap a title suggestion (or type one) and enter the amount. For
+   fuel, add litres and the odometer to get economy figures.
 4. **Mark services done.** When a service is due, tap **Mark done** on the
    car's page. It's logged as an expense and the reminder resets.
 5. **Add recurring costs.** Expenses → **Recurring costs** → **+**. When one
    comes due, a card on Home asks you to log it.
-6. **Back up.** Settings → **Back up now**, and save the file somewhere safe.
+6. **Renew rego.** When the rego checklist appears, tap **Log** on each step
+   as you do it. Logging "Rego renewal" moves the rego date on a year.
+7. **Record tyres and battery.** On the car's page, under **Tyres &
+   battery**, tap **Set** and pick when they were fitted. For tyres, add the
+   odometer then to get a distance estimate too.
+8. **Add the widget.** Long-press your home screen → **Widgets** →
+   **ServoBuddy**.
+9. **Back up.** Settings → **Back up now**, and save the file somewhere safe.
    To restore, Settings → **Restore from backup** and pick the file. Restoring
    replaces everything on the phone.
-7. **Sold a car?** Edit it → **Mark as sold / not in use**. Its history stays.
+10. **Sold a car?** Edit it → **Mark as sold / not in use**. Its history stays.
 
 ## Build from source
 
@@ -209,6 +239,8 @@ preview test is skipped in normal test runs.
   tested schema migrations
 - [flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications)
   for reminders
+- [home_widget](https://pub.dev/packages/home_widget) for the home screen
+  widget
 - [file_picker](https://pub.dev/packages/file_picker) and
   [archive](https://pub.dev/packages/archive) for backups
 - [Lucide](https://lucide.dev) icons and the
@@ -226,6 +258,7 @@ lib/
     ├── expenses/   Expenses, recurring costs, fuel economy
     ├── garage/     Snapshot of all data with derived values
     ├── home/       Home tab
+    ├── home_widget/ Home screen widget data and taps
     ├── reminders/  Reminder planning, green and pink slips, Coming up
     ├── service/    Service schedules and due estimates
     ├── settings/   Theme, Home title and preferences
@@ -249,6 +282,9 @@ Bug reports and ideas are welcome in
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for every release.
+
+**1.5.0** — Rego renewal checklist, tyre and battery ages, home screen
+widget, and titles with suggestions for every expense.
 
 **1.2.0** — Road Sign redesign, backup and restore, and fully offline (the
 fuel price finder was removed).

@@ -6,8 +6,30 @@ follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-27
+
+Keeping on top of the car: rego renewals step by step, tyre and battery
+ages, a home screen widget, and titles for every expense.
+
 ### Added
 
+- **Rego renewal checklist.** Six weeks before rego is due, the car's page
+  and Home show the steps: CTP green slip, pink slip (cars 5+ years old) and
+  paying the rego. Tap **Log** on a step to record it with its amount and
+  date. Logging the rego payment moves the car's rego date on a year, and the
+  checklist goes away until next time.
+- **Tyres and battery.** Record when they were fitted, from the car's page
+  (handy when they were part of a service bill) or by logging an expense
+  titled "Tyres" or "Battery". ServoBuddy shows how old they are and when to
+  replace them: batteries at 4 years, tyres at 5 years or 40,000 km,
+  whichever your driving reaches first. They join Coming up and get
+  reminders as the date nears.
+- **Home screen widget.** Add "ServoBuddy" from your launcher's widgets for
+  the next thing due and this month's spend at a glance. Tap it to open that
+  car.
+- **Odometer on rego.** Logging a Rego expense asks for the current
+  odometer, so service due dates stay accurate even for cars that rarely
+  see a fill-up log.
 - **Titles for every expense**, not just services. A "What was it?" field
   sits under the category, with one-tap suggestions for each: E10 or U91
   for fuel, Battery or Tyres for repairs, Rego renewal or CTP green slip for
@@ -20,6 +42,8 @@ follow [Semantic Versioning](https://semver.org/).
 
 - Switching category on the form clears a title picked from the old
   category's suggestions, but keeps one you typed yourself.
+- The database moves to schema v4 (tyre and battery dates). Upgrades keep
+  everything, and older backups still restore.
 
 ## [1.2.0] - 2026-10-26
 
@@ -216,5 +240,6 @@ First release.
 - Fuel prices sit behind a `FuelPriceSource` interface, so other states can be
   added later. The NSW client uses the v1 (NSW-only) endpoints.
 
-[Unreleased]: https://github.com/SarveshP16/ServoBuddy/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/SarveshP16/ServoBuddy/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/SarveshP16/ServoBuddy/compare/v1.2.0...v1.5.0
 [1.2.0]: https://github.com/SarveshP16/ServoBuddy/releases/tag/v1.2.0

@@ -21,6 +21,8 @@ import '../../expenses/presentation/widgets/expense_row.dart';
 import '../../expenses/presentation/widgets/recurring_due_section.dart';
 import '../../garage/application/garage_provider.dart';
 import '../../garage/domain/garage.dart';
+import '../../reminders/domain/rego_renewal.dart';
+import '../../reminders/presentation/rego_renewal_card.dart';
 import '../../reminders/presentation/upcoming_items.dart';
 import '../../reminders/presentation/upcoming_sheet.dart';
 import '../../service/presentation/due_text.dart';
@@ -151,6 +153,12 @@ class HomeScreen extends ConsumerWidget {
     final recent = garage.expenses.take(_recentCount).toList();
     final others = garage.vehicles.skip(1).toList();
     final odometer = garage.odometerOf(main.id);
+    final renewals = [
+      for (final v in garage.vehicles)
+        if (regoRenewalFor(v, garage.expensesFor(v.id), garage.today)
+            case final r?)
+          (v, r),
+    ];
     final setup = <SetupStep>[
       if (odometer == null || odometer == 0)
         (
@@ -226,6 +234,16 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+              for (final (v, r) in renewals)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                  child: RegoRenewalCard(
+                    vehicle: v,
+                    renewal: r,
+                    today: garage.today,
+                    showCarName: true,
+                  ),
+                ),
               if (setup.isNotEmpty) ...[
                 const SectionHeader(title: 'Finish setting up'),
                 Padding(

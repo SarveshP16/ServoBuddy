@@ -63,6 +63,8 @@ class _UpcomingSheet extends ConsumerWidget {
                       UpcomingKind.insurance => LucideIcons.shieldCheck,
                       UpcomingKind.greenSlip => LucideIcons.fileCheck,
                       UpcomingKind.pinkSlip => LucideIcons.clipboardCheck,
+                      UpcomingKind.tyres => LucideIcons.circleDot,
+                      UpcomingKind.battery => LucideIcons.batteryMedium,
                     },
                     color: item.urgent ? c.warn : c.primary,
                     background: item.urgent ? c.warnTile : null,

@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/providers.dart';
+import '../../../core/utils/calendar.dart';
 import '../../garage/application/garage_provider.dart';
 import '../domain/body_type.dart';
 import '../domain/fuel_type.dart';
 import '../domain/vehicle_status.dart';
+import '../domain/wear_parts.dart';
 
 /// What the vehicle form collects.
 class VehicleDraft {
@@ -146,4 +148,45 @@ class VehicleActions {
 
   Future<void> setPrimary(int id) =>
       _ref.read(vehicleRepositoryProvider).setPrimary(id);
+
+  /// Rego paid: moves the expiry on a year. Returns the new date, or null
+  /// if the car has no rego date to move.
+  Future<DateTime?> renewRego(int vehicleId) async {
+    final v = _ref.read(garageProvider).vehicle(vehicleId);
+    final expiry = v?.regoExpiry;
+    if (v == null || expiry == null) return null;
+    final next = addMonths(expiry, 12);
+    await _ref
+        .read(vehicleRepositoryProvider)
+        .save(v.copyWith(regoExpiry: Value(next)));
+    return next;
+  }
+
+  /// When [part] was fitted (null clears it), and for tyres the odometer
+  /// then. Only moves forward when [onlyIfNewer], so logging an old "Tyres"
+  /// expense doesn't wind back a later fitting.
+  Future<bool> recordFitting(
+    int vehicleId,
+    WearPart part,
+    DateTime? fitted, {
+    int? km,
+    bool onlyIfNewer = false,
+  }) async {
+    final v = _ref.read(garageProvider).vehicle(vehicleId);
+    if (v == null) return false;
+    final current = fittedDate(v, part);
+    if (onlyIfNewer &&
+        current != null &&
+        (fitted == null || !fitted.isAfter(current))) {
+      return false;
+    }
+    await _ref.read(vehicleRepositoryProvider).save(switch (part) {
+      WearPart.tyres => v.copyWith(
+        tyresFitted: Value(fitted),
+        tyresFittedKm: Value(fitted == null ? null : km),
+      ),
+      WearPart.battery => v.copyWith(batteryFitted: Value(fitted)),
+    });
+    return true;
+  }
 }

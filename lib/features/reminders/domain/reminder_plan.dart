@@ -6,6 +6,7 @@ import '../../../core/utils/calendar.dart';
 import '../../expenses/domain/recurrence.dart';
 import '../../garage/domain/garage.dart';
 import '../../vehicles/domain/vehicle_labels.dart';
+import '../../vehicles/domain/wear_parts.dart';
 import 'nsw_slips.dart';
 
 /// Reminders go out at 9 am, this many days ahead and again on the day.
@@ -55,6 +56,28 @@ List<PlannedNotification> planReminders(Garage garage, DateTime now) {
           'Get the safety check done before rego renews on $regoDay.',
         );
       }
+    }
+
+    for (final part in WearPart.values) {
+      final age = partAgeFor(
+        v,
+        part,
+        today: garage.today,
+        currentKm: garage.odometerOf(v.id),
+        kmPerDay: garage.kmPerDayOf(v.id),
+      );
+      if (age == null) continue;
+      final what = part.label;
+      at(
+        addDays(age.replaceBy, -reminderLeadDays),
+        '$what due for replacing soon — $name',
+        'Fitted ${formatDate(age.fitted)}. Worth getting them checked.',
+      );
+      at(
+        age.replaceBy,
+        '$what due for replacing — $name',
+        'Time to book it in.',
+      );
     }
 
     for (final due in garage.duesFor(v.id)) {

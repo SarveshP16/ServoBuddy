@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:drift/drift.dart' show driftRuntimeOptions;
@@ -16,6 +17,8 @@ import 'package:servobuddy/features/backup/application/backup_actions.dart';
 import 'package:servobuddy/features/expenses/presentation/widgets/amount_field.dart';
 import 'package:servobuddy/features/expenses/presentation/widgets/fuel_fill_fields.dart';
 import 'package:servobuddy/features/expenses/presentation/widgets/title_field.dart';
+import 'package:servobuddy/features/home_widget/application/home_widget_sync.dart';
+import 'package:servobuddy/features/home_widget/domain/widget_snapshot.dart';
 import 'package:servobuddy/features/settings/data/app_settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -78,6 +81,22 @@ class FakeBackupFiles extends BackupFiles {
   Future<Uint8List?> open() async => toOpen;
 }
 
+/// Stands in for the home screen widget: keeps the last thing it was told to
+/// show, and lets a test fake a tap.
+class FakeHomeWidgetBridge extends HomeWidgetBridge {
+  WidgetSnapshot? shown;
+  final taps = StreamController<Uri?>.broadcast();
+
+  @override
+  Future<void> show(WidgetSnapshot s) async => shown = s;
+
+  @override
+  Future<Uri?> initialLaunch() async => null;
+
+  @override
+  Stream<Uri?> get launches => taps.stream;
+}
+
 bool _fontsLoaded = false;
 
 /// flutter_test draws every font as the fixed-width "Ahem" test font unless
@@ -127,6 +146,7 @@ class TestApp {
   final AppDatabase db;
   final FakeNotificationService notifications;
   final backupFiles = FakeBackupFiles();
+  final homeWidget = FakeHomeWidgetBridge();
 
   /// Boots the whole app on a phone-sized screen against an in-memory
   /// database. Pass [seed] to insert data before the first frame.
@@ -165,6 +185,7 @@ class TestApp {
           clockProvider.overrideWithValue(() => testNow),
           notificationServiceProvider.overrideWithValue(app.notifications),
           backupFilesProvider.overrideWithValue(app.backupFiles),
+          homeWidgetBridgeProvider.overrideWithValue(app.homeWidget),
           imageStoreProvider.overrideWithValue(
             ImageStore(root: () async => tmp),
           ),

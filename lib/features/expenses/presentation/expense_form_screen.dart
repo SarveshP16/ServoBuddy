@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/routes.dart';
 import '../../../core/database/app_database.dart';
+import '../../../core/format/dates.dart';
 import '../../../core/format/money.dart';
 import '../../../core/format/numbers.dart';
 import '../../../core/providers.dart';
@@ -23,7 +24,9 @@ import '../../../core/widgets/header_button.dart';
 import '../../../core/widgets/photo_field.dart';
 import '../../../core/widgets/screen_header.dart';
 import '../../garage/application/garage_provider.dart';
+import '../../vehicles/application/vehicle_actions.dart';
 import '../../vehicles/domain/vehicle_labels.dart';
+import '../../vehicles/domain/wear_parts.dart';
 import '../application/expense_actions.dart';
 import '../application/recurring_actions.dart';
 import '../domain/expense_category.dart';
@@ -47,12 +50,19 @@ class ExpenseFormScreen extends ConsumerStatefulWidget {
     this.initialScheduleId,
     this.recurringId,
     this.recurringDue,
+    this.initialTitle,
+    this.renewsRego = false,
   });
 
   final int? expenseId;
   final int? initialVehicleId;
   final ExpenseCategory? initialCategory;
   final int? initialScheduleId;
+  final String? initialTitle;
+
+  /// Logged from the rego checklist's last step: saving it moves the car's
+  /// rego expiry on a year.
+  final bool renewsRego;
 
   /// Logging a recurring cost's due payment (its "Edit" button): prefilled
   /// from it, and saving moves it on to its next due date.
@@ -136,6 +146,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
         ? widget.initialVehicleId
         : garage.primary?.id;
     _category = widget.initialCategory ?? ExpenseCategory.fuel;
+    _title.text = widget.initialTitle ?? '';
     if (widget.initialScheduleId != null &&
         garage.schedule(widget.initialScheduleId!)?.vehicleId == _vehicleId) {
       _category = ExpenseCategory.service;
@@ -178,6 +189,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
     final garage = ref.read(garageProvider);
     final isFuel = _category == ExpenseCategory.fuel;
     final isService = _category == ExpenseCategory.service;
+    final isRego = _category == ExpenseCategory.rego;
     final schedule = isService && _scheduleId != null
         ? garage.schedule(_scheduleId!)
         : null;
@@ -193,7 +205,11 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
       receiptPath: _receiptPath,
       litres: isFuel ? parseDecimal(_litres.text) : null,
       fullTank: _fullTank,
-      odometerKm: (isFuel || isService) ? parseInt(_odometer.text) : null,
+      // Rego asks too: once a year at least, the odometer is brought up to
+      // date and service estimates stay honest.
+      odometerKm: (isFuel || isService || isRego)
+          ? parseInt(_odometer.text)
+          : null,
       scheduleId: schedule?.id,
     );
     final actions = ref.read(expenseActionsProvider);
@@ -202,6 +218,28 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
         await actions.create(draft);
       } else {
         await actions.update(_original!, draft);
+      }
+      final notes = <String>[];
+      if (!_editing) {
+        final vehicles = ref.read(vehicleActionsProvider);
+        if (widget.renewsRego && isRego) {
+          final next = await vehicles.renewRego(draft.vehicleId);
+          if (next != null) notes.add('rego now expires ${formatDate(next)}');
+        }
+        // A "Tyres" or "Battery" expense means new ones went on that day.
+        final part = WearPart.values
+            .where((p) => p.label.toLowerCase() == draft.title?.toLowerCase())
+            .firstOrNull;
+        if (part != null &&
+            await vehicles.recordFitting(
+              draft.vehicleId,
+              part,
+              _date,
+              km: draft.odometerKm,
+              onlyIfNewer: true,
+            )) {
+          notes.add('${part.label.toLowerCase()} age reset');
+        }
       }
       final recurring = ref.read(recurringActionsProvider);
       if (_fromRecurring != null) {
@@ -221,16 +259,14 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
         );
       }
       if (!mounted) return;
-      showAppSnackBar(
-        context,
-        _editing
-            ? 'Expense updated'
-            : _repeat
-            ? 'Expense saved · repeats ${_repeatFrequency.label.toLowerCase()}'
-            : isService
-            ? 'Service record saved'
-            : 'Expense saved',
-      );
+      final saved = _editing
+          ? 'Expense updated'
+          : _repeat
+          ? 'Expense saved · repeats ${_repeatFrequency.label.toLowerCase()}'
+          : isService
+          ? 'Service record saved'
+          : 'Expense saved';
+      showAppSnackBar(context, [saved, ...notes].join(' · '));
       context.pop();
     } on Exception {
       if (mounted) {
@@ -250,6 +286,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
     final garage = ref.watch(garageProvider);
     final isFuel = _category == ExpenseCategory.fuel;
     final isService = _category == ExpenseCategory.service;
+    final isRego = _category == ExpenseCategory.rego;
     final schedules = _vehicleId == null
         ? const <ServiceSchedule>[]
         : garage.schedulesFor(_vehicleId!);
@@ -384,6 +421,13 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                       ),
                     if (isService)
                       OdometerInput(controller: _odometer, hint: odometerHint),
+                    if (isRego)
+                      OdometerInput(
+                        controller: _odometer,
+                        hint: odometerHint,
+                        label: 'Odometer now',
+                        help: 'Keeps service due dates accurate.',
+                      ),
                     const FormFieldLabel('Date'),
                     DateField(
                       value: _date,

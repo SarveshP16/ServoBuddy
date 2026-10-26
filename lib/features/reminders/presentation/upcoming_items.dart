@@ -5,12 +5,21 @@ import '../../garage/domain/garage.dart';
 import '../../service/domain/service_due.dart';
 import '../../service/presentation/due_text.dart';
 import '../../vehicles/domain/vehicle_alert.dart';
+import '../../vehicles/domain/wear_parts.dart';
 import '../domain/nsw_slips.dart';
 
 /// Green and pink slips are listed once rego is this close.
 const slipHorizonDays = 60;
 
-enum UpcomingKind { service, rego, insurance, greenSlip, pinkSlip }
+enum UpcomingKind {
+  service,
+  rego,
+  insurance,
+  greenSlip,
+  pinkSlip,
+  tyres,
+  battery,
+}
 
 /// One thing coming up for one car, for the list behind Home's bell.
 class UpcomingItem {
@@ -66,6 +75,35 @@ List<UpcomingItem> upcomingItems(Garage garage) {
               : '${formatDate(expiry)} · ${days == 0 ? 'today' : 'in ${formatApproxSpan(days)}'}',
           urgent: days <= VehicleAlert.renewalWindowDays,
           daysLeft: days,
+        ),
+      );
+    }
+
+    // Tyres and battery, once they're within a few months of replacement.
+    for (final part in WearPart.values) {
+      final age = partAgeFor(
+        v,
+        part,
+        today: garage.today,
+        currentKm: garage.odometerOf(v.id),
+        kmPerDay: garage.kmPerDayOf(v.id),
+      );
+      if (age == null || age.status == WearStatus.ok) continue;
+      final due = age.status == WearStatus.due;
+      items.add(
+        UpcomingItem(
+          vehicle: v,
+          kind: part == WearPart.tyres
+              ? UpcomingKind.tyres
+              : UpcomingKind.battery,
+          title: due
+              ? '${part.label} due for replacing'
+              : '${part.label} getting old',
+          detail:
+              'Fitted ${formatDate(age.fitted)} · replace by '
+              '${formatDate(age.replaceBy)}',
+          urgent: true,
+          daysLeft: daysBetween(garage.today, age.replaceBy),
         ),
       );
     }

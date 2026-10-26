@@ -2,7 +2,7 @@ name: servobuddy
 description: "ServoBuddy - personal vehicle manager."
 publish_to: 'none'
 
-version: 1.2.0+3
+version: 1.5.0+4
 
 environment:
   sdk: ^3.13.2
@@ -27,6 +27,7 @@ dependencies:
   package_info_plus: ^10.2.1
   file_picker: ^13.2.0
   archive: ^4.5.2
+  home_widget: ^0.10.0
 
 dev_dependencies:
   flutter_test:

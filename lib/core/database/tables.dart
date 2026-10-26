@@ -36,6 +36,13 @@ class Vehicles extends Table {
   /// v3: set when marked sold (both optional).
   DateTimeColumn get soldDate => dateTime().nullable()();
   IntColumn get salePriceCents => integer().nullable()();
+
+  /// v4: when the current tyres and battery went on, for replacement
+  /// estimates. Often paid as part of a service, so set by hand as well as
+  /// from a "Tyres" or "Battery" expense.
+  DateTimeColumn get tyresFitted => dateTime().nullable()();
+  IntColumn get tyresFittedKm => integer().nullable()();
+  DateTimeColumn get batteryFitted => dateTime().nullable()();
 }
 
 /// Odometer readings typed in directly (when adding or editing a car). Fuel

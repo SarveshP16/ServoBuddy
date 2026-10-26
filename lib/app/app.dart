@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme/app_palette.dart';
 import '../core/theme/app_palettes.dart';
 import '../core/theme/app_theme.dart';
+import '../features/home_widget/application/home_widget_sync.dart';
 import '../features/reminders/application/reminder_sync.dart';
 import '../features/settings/application/settings_controller.dart';
 import 'router.dart';
@@ -16,6 +17,8 @@ class ServoBuddyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Kept alive for the app's lifetime: reschedules reminders on every change.
     ref.watch(reminderSyncProvider);
+    // And the home screen widget, which also opens pages when tapped.
+    ref.watch(homeWidgetSyncProvider);
     final choice = ref.watch(settingsProvider.select((s) => s.themeChoice));
     return MaterialApp.router(
       title: 'ServoBuddy',

@@ -21,6 +21,8 @@ import '../../expenses/presentation/widgets/expense_row.dart';
 import '../../expenses/presentation/widgets/spend_breakdown_card.dart';
 import '../../garage/application/garage_provider.dart';
 import '../../reminders/domain/nsw_slips.dart';
+import '../../reminders/domain/rego_renewal.dart';
+import '../../reminders/presentation/rego_renewal_card.dart';
 import '../../service/presentation/widgets/service_due_card.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../application/vehicle_actions.dart';
@@ -29,6 +31,7 @@ import '../domain/vehicle_status.dart';
 import 'widgets/retired_banner.dart';
 import 'widgets/vehicle_facts_card.dart';
 import 'widgets/vehicle_image.dart';
+import 'widgets/wear_parts_card.dart';
 
 class VehicleDetailScreen extends ConsumerWidget {
   const VehicleDetailScreen({super.key, required this.vehicleId});
@@ -49,6 +52,7 @@ class VehicleDetailScreen extends ConsumerWidget {
     final due = garage.nextDueFor(v.id);
     final hasSchedules = garage.schedulesFor(v.id).isNotEmpty;
     final history = garage.serviceHistoryFor(v.id);
+    final renewal = regoRenewalFor(v, garage.expensesFor(v.id), garage.today);
     return Scaffold(
       body: Column(
         children: [
@@ -75,6 +79,14 @@ class VehicleDetailScreen extends ConsumerWidget {
                           RetiredBanner(
                             vehicle: v,
                             lifetimeSpendCents: garage.lifetimeSpend(v.id),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        if (!retired && renewal != null) ...[
+                          RegoRenewalCard(
+                            vehicle: v,
+                            renewal: renewal,
+                            today: garage.today,
                           ),
                           const SizedBox(height: 16),
                         ],
@@ -119,6 +131,10 @@ class VehicleDetailScreen extends ConsumerWidget {
                             garage.today,
                           )?.pinkSlipFrom,
                         ),
+                        if (!retired) ...[
+                          const SizedBox(height: 16),
+                          WearPartsCard(vehicle: v),
+                        ],
                         SectionHeader(
                           title: 'Service history',
                           actionLabel: retired ? null : 'Schedule',

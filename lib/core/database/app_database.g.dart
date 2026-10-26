@@ -167,6 +167,40 @@ class $VehiclesTable extends Vehicles with TableInfo<$VehiclesTable, Vehicle> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _tyresFittedMeta = const VerificationMeta(
+    'tyresFitted',
+  );
+  @override
+  late final GeneratedColumn<DateTime> tyresFitted = GeneratedColumn<DateTime>(
+    'tyres_fitted',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _tyresFittedKmMeta = const VerificationMeta(
+    'tyresFittedKm',
+  );
+  @override
+  late final GeneratedColumn<int> tyresFittedKm = GeneratedColumn<int>(
+    'tyres_fitted_km',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _batteryFittedMeta = const VerificationMeta(
+    'batteryFitted',
+  );
+  @override
+  late final GeneratedColumn<DateTime> batteryFitted =
+      GeneratedColumn<DateTime>(
+        'battery_fitted',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -184,6 +218,9 @@ class $VehiclesTable extends Vehicles with TableInfo<$VehiclesTable, Vehicle> {
     status,
     soldDate,
     salePriceCents,
+    tyresFitted,
+    tyresFittedKm,
+    batteryFitted,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -280,6 +317,33 @@ class $VehiclesTable extends Vehicles with TableInfo<$VehiclesTable, Vehicle> {
         ),
       );
     }
+    if (data.containsKey('tyres_fitted')) {
+      context.handle(
+        _tyresFittedMeta,
+        tyresFitted.isAcceptableOrUnknown(
+          data['tyres_fitted']!,
+          _tyresFittedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('tyres_fitted_km')) {
+      context.handle(
+        _tyresFittedKmMeta,
+        tyresFittedKm.isAcceptableOrUnknown(
+          data['tyres_fitted_km']!,
+          _tyresFittedKmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('battery_fitted')) {
+      context.handle(
+        _batteryFittedMeta,
+        batteryFitted.isAcceptableOrUnknown(
+          data['battery_fitted']!,
+          _batteryFittedMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -355,6 +419,18 @@ class $VehiclesTable extends Vehicles with TableInfo<$VehiclesTable, Vehicle> {
         DriftSqlType.int,
         data['${effectivePrefix}sale_price_cents'],
       ),
+      tyresFitted: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}tyres_fitted'],
+      ),
+      tyresFittedKm: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tyres_fitted_km'],
+      ),
+      batteryFitted: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}battery_fitted'],
+      ),
     );
   }
 
@@ -388,7 +464,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
   final DateTime? regoExpiry;
   final DateTime? insuranceExpiry;
 
-  /// Whose fuel type the Home "Nearby fuel" card searches for.
+  /// The main car: listed first, and the default for new expenses.
   final bool isPrimary;
   final DateTime createdAt;
 
@@ -398,6 +474,13 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
   /// v3: set when marked sold (both optional).
   final DateTime? soldDate;
   final int? salePriceCents;
+
+  /// v4: when the current tyres and battery went on, for replacement
+  /// estimates. Often paid as part of a service, so set by hand as well as
+  /// from a "Tyres" or "Battery" expense.
+  final DateTime? tyresFitted;
+  final int? tyresFittedKm;
+  final DateTime? batteryFitted;
   const Vehicle({
     required this.id,
     required this.make,
@@ -414,6 +497,9 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
     required this.status,
     this.soldDate,
     this.salePriceCents,
+    this.tyresFitted,
+    this.tyresFittedKm,
+    this.batteryFitted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -457,6 +543,15 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
     if (!nullToAbsent || salePriceCents != null) {
       map['sale_price_cents'] = Variable<int>(salePriceCents);
     }
+    if (!nullToAbsent || tyresFitted != null) {
+      map['tyres_fitted'] = Variable<DateTime>(tyresFitted);
+    }
+    if (!nullToAbsent || tyresFittedKm != null) {
+      map['tyres_fitted_km'] = Variable<int>(tyresFittedKm);
+    }
+    if (!nullToAbsent || batteryFitted != null) {
+      map['battery_fitted'] = Variable<DateTime>(batteryFitted);
+    }
     return map;
   }
 
@@ -487,6 +582,15 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
       salePriceCents: salePriceCents == null && nullToAbsent
           ? const Value.absent()
           : Value(salePriceCents),
+      tyresFitted: tyresFitted == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tyresFitted),
+      tyresFittedKm: tyresFittedKm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tyresFittedKm),
+      batteryFitted: batteryFitted == null && nullToAbsent
+          ? const Value.absent()
+          : Value(batteryFitted),
     );
   }
 
@@ -517,6 +621,9 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
       ),
       soldDate: serializer.fromJson<DateTime?>(json['soldDate']),
       salePriceCents: serializer.fromJson<int?>(json['salePriceCents']),
+      tyresFitted: serializer.fromJson<DateTime?>(json['tyresFitted']),
+      tyresFittedKm: serializer.fromJson<int?>(json['tyresFittedKm']),
+      batteryFitted: serializer.fromJson<DateTime?>(json['batteryFitted']),
     );
   }
   @override
@@ -544,6 +651,9 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
       ),
       'soldDate': serializer.toJson<DateTime?>(soldDate),
       'salePriceCents': serializer.toJson<int?>(salePriceCents),
+      'tyresFitted': serializer.toJson<DateTime?>(tyresFitted),
+      'tyresFittedKm': serializer.toJson<int?>(tyresFittedKm),
+      'batteryFitted': serializer.toJson<DateTime?>(batteryFitted),
     };
   }
 
@@ -563,6 +673,9 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
     VehicleStatus? status,
     Value<DateTime?> soldDate = const Value.absent(),
     Value<int?> salePriceCents = const Value.absent(),
+    Value<DateTime?> tyresFitted = const Value.absent(),
+    Value<int?> tyresFittedKm = const Value.absent(),
+    Value<DateTime?> batteryFitted = const Value.absent(),
   }) => Vehicle(
     id: id ?? this.id,
     make: make ?? this.make,
@@ -583,6 +696,13 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
     salePriceCents: salePriceCents.present
         ? salePriceCents.value
         : this.salePriceCents,
+    tyresFitted: tyresFitted.present ? tyresFitted.value : this.tyresFitted,
+    tyresFittedKm: tyresFittedKm.present
+        ? tyresFittedKm.value
+        : this.tyresFittedKm,
+    batteryFitted: batteryFitted.present
+        ? batteryFitted.value
+        : this.batteryFitted,
   );
   Vehicle copyWithCompanion(VehiclesCompanion data) {
     return Vehicle(
@@ -607,6 +727,15 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
       salePriceCents: data.salePriceCents.present
           ? data.salePriceCents.value
           : this.salePriceCents,
+      tyresFitted: data.tyresFitted.present
+          ? data.tyresFitted.value
+          : this.tyresFitted,
+      tyresFittedKm: data.tyresFittedKm.present
+          ? data.tyresFittedKm.value
+          : this.tyresFittedKm,
+      batteryFitted: data.batteryFitted.present
+          ? data.batteryFitted.value
+          : this.batteryFitted,
     );
   }
 
@@ -627,7 +756,10 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
           ..write('createdAt: $createdAt, ')
           ..write('status: $status, ')
           ..write('soldDate: $soldDate, ')
-          ..write('salePriceCents: $salePriceCents')
+          ..write('salePriceCents: $salePriceCents, ')
+          ..write('tyresFitted: $tyresFitted, ')
+          ..write('tyresFittedKm: $tyresFittedKm, ')
+          ..write('batteryFitted: $batteryFitted')
           ..write(')'))
         .toString();
   }
@@ -649,6 +781,9 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
     status,
     soldDate,
     salePriceCents,
+    tyresFitted,
+    tyresFittedKm,
+    batteryFitted,
   );
   @override
   bool operator ==(Object other) =>
@@ -668,7 +803,10 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
           other.createdAt == this.createdAt &&
           other.status == this.status &&
           other.soldDate == this.soldDate &&
-          other.salePriceCents == this.salePriceCents);
+          other.salePriceCents == this.salePriceCents &&
+          other.tyresFitted == this.tyresFitted &&
+          other.tyresFittedKm == this.tyresFittedKm &&
+          other.batteryFitted == this.batteryFitted);
 }
 
 class VehiclesCompanion extends UpdateCompanion<Vehicle> {
@@ -687,6 +825,9 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
   final Value<VehicleStatus> status;
   final Value<DateTime?> soldDate;
   final Value<int?> salePriceCents;
+  final Value<DateTime?> tyresFitted;
+  final Value<int?> tyresFittedKm;
+  final Value<DateTime?> batteryFitted;
   const VehiclesCompanion({
     this.id = const Value.absent(),
     this.make = const Value.absent(),
@@ -703,6 +844,9 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     this.status = const Value.absent(),
     this.soldDate = const Value.absent(),
     this.salePriceCents = const Value.absent(),
+    this.tyresFitted = const Value.absent(),
+    this.tyresFittedKm = const Value.absent(),
+    this.batteryFitted = const Value.absent(),
   });
   VehiclesCompanion.insert({
     this.id = const Value.absent(),
@@ -720,6 +864,9 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     this.status = const Value.absent(),
     this.soldDate = const Value.absent(),
     this.salePriceCents = const Value.absent(),
+    this.tyresFitted = const Value.absent(),
+    this.tyresFittedKm = const Value.absent(),
+    this.batteryFitted = const Value.absent(),
   }) : make = Value(make),
        model = Value(model),
        year = Value(year),
@@ -742,6 +889,9 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     Expression<String>? status,
     Expression<DateTime>? soldDate,
     Expression<int>? salePriceCents,
+    Expression<DateTime>? tyresFitted,
+    Expression<int>? tyresFittedKm,
+    Expression<DateTime>? batteryFitted,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -759,6 +909,9 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
       if (status != null) 'status': status,
       if (soldDate != null) 'sold_date': soldDate,
       if (salePriceCents != null) 'sale_price_cents': salePriceCents,
+      if (tyresFitted != null) 'tyres_fitted': tyresFitted,
+      if (tyresFittedKm != null) 'tyres_fitted_km': tyresFittedKm,
+      if (batteryFitted != null) 'battery_fitted': batteryFitted,
     });
   }
 
@@ -778,6 +931,9 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     Value<VehicleStatus>? status,
     Value<DateTime?>? soldDate,
     Value<int?>? salePriceCents,
+    Value<DateTime?>? tyresFitted,
+    Value<int?>? tyresFittedKm,
+    Value<DateTime?>? batteryFitted,
   }) {
     return VehiclesCompanion(
       id: id ?? this.id,
@@ -795,6 +951,9 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
       status: status ?? this.status,
       soldDate: soldDate ?? this.soldDate,
       salePriceCents: salePriceCents ?? this.salePriceCents,
+      tyresFitted: tyresFitted ?? this.tyresFitted,
+      tyresFittedKm: tyresFittedKm ?? this.tyresFittedKm,
+      batteryFitted: batteryFitted ?? this.batteryFitted,
     );
   }
 
@@ -852,6 +1011,15 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     if (salePriceCents.present) {
       map['sale_price_cents'] = Variable<int>(salePriceCents.value);
     }
+    if (tyresFitted.present) {
+      map['tyres_fitted'] = Variable<DateTime>(tyresFitted.value);
+    }
+    if (tyresFittedKm.present) {
+      map['tyres_fitted_km'] = Variable<int>(tyresFittedKm.value);
+    }
+    if (batteryFitted.present) {
+      map['battery_fitted'] = Variable<DateTime>(batteryFitted.value);
+    }
     return map;
   }
 
@@ -872,7 +1040,10 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
           ..write('createdAt: $createdAt, ')
           ..write('status: $status, ')
           ..write('soldDate: $soldDate, ')
-          ..write('salePriceCents: $salePriceCents')
+          ..write('salePriceCents: $salePriceCents, ')
+          ..write('tyresFitted: $tyresFitted, ')
+          ..write('tyresFittedKm: $tyresFittedKm, ')
+          ..write('batteryFitted: $batteryFitted')
           ..write(')'))
         .toString();
   }
@@ -3038,6 +3209,9 @@ typedef $$VehiclesTableCreateCompanionBuilder = VehiclesCompanion Function({
   Value<VehicleStatus> status,
   Value<DateTime?> soldDate,
   Value<int?> salePriceCents,
+  Value<DateTime?> tyresFitted,
+  Value<int?> tyresFittedKm,
+  Value<DateTime?> batteryFitted,
 });
 typedef $$VehiclesTableUpdateCompanionBuilder = VehiclesCompanion Function({
   Value<int> id,
@@ -3055,6 +3229,9 @@ typedef $$VehiclesTableUpdateCompanionBuilder = VehiclesCompanion Function({
   Value<VehicleStatus> status,
   Value<DateTime?> soldDate,
   Value<int?> salePriceCents,
+  Value<DateTime?> tyresFitted,
+  Value<int?> tyresFittedKm,
+  Value<DateTime?> batteryFitted,
 });
 
 final class $$VehiclesTableReferences
@@ -3226,6 +3403,21 @@ class $$VehiclesTableFilterComposer
 
   ColumnFilters<int> get salePriceCents => $composableBuilder(
     column: $table.salePriceCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get tyresFitted => $composableBuilder(
+    column: $table.tyresFitted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get tyresFittedKm => $composableBuilder(
+    column: $table.tyresFittedKm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get batteryFitted => $composableBuilder(
+    column: $table.batteryFitted,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3413,6 +3605,21 @@ class $$VehiclesTableOrderingComposer
     column: $table.salePriceCents,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get tyresFitted => $composableBuilder(
+    column: $table.tyresFitted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get tyresFittedKm => $composableBuilder(
+    column: $table.tyresFittedKm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get batteryFitted => $composableBuilder(
+    column: $table.batteryFitted,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$VehiclesTableAnnotationComposer
@@ -3472,6 +3679,21 @@ class $$VehiclesTableAnnotationComposer
 
   GeneratedColumn<int> get salePriceCents => $composableBuilder(
     column: $table.salePriceCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get tyresFitted => $composableBuilder(
+    column: $table.tyresFitted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get tyresFittedKm => $composableBuilder(
+    column: $table.tyresFittedKm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get batteryFitted => $composableBuilder(
+    column: $table.batteryFitted,
     builder: (column) => column,
   );
 
@@ -3625,6 +3847,9 @@ class $$VehiclesTableTableManager
                 Value<VehicleStatus> status = const Value.absent(),
                 Value<DateTime?> soldDate = const Value.absent(),
                 Value<int?> salePriceCents = const Value.absent(),
+                Value<DateTime?> tyresFitted = const Value.absent(),
+                Value<int?> tyresFittedKm = const Value.absent(),
+                Value<DateTime?> batteryFitted = const Value.absent(),
               }) => VehiclesCompanion(
                 id: id,
                 make: make,
@@ -3641,6 +3866,9 @@ class $$VehiclesTableTableManager
                 status: status,
                 soldDate: soldDate,
                 salePriceCents: salePriceCents,
+                tyresFitted: tyresFitted,
+                tyresFittedKm: tyresFittedKm,
+                batteryFitted: batteryFitted,
               ),
           createCompanionCallback:
               ({
@@ -3659,6 +3887,9 @@ class $$VehiclesTableTableManager
                 Value<VehicleStatus> status = const Value.absent(),
                 Value<DateTime?> soldDate = const Value.absent(),
                 Value<int?> salePriceCents = const Value.absent(),
+                Value<DateTime?> tyresFitted = const Value.absent(),
+                Value<int?> tyresFittedKm = const Value.absent(),
+                Value<DateTime?> batteryFitted = const Value.absent(),
               }) => VehiclesCompanion.insert(
                 id: id,
                 make: make,
@@ -3675,6 +3906,9 @@ class $$VehiclesTableTableManager
                 status: status,
                 soldDate: soldDate,
                 salePriceCents: salePriceCents,
+                tyresFitted: tyresFitted,
+                tyresFittedKm: tyresFittedKm,
+                batteryFitted: batteryFitted,
               ),
           withReferenceMapper: (p0) => p0
               .map(

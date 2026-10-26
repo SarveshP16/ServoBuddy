@@ -145,4 +145,51 @@ void main() {
     await app.settle(tester);
     await extraShot(tester, '14_sold_detail');
   });
+
+  // Rego due in 17 days with the green slip bought, old battery, tyres on.
+  Future<TestApp> bootWithUpkeep(WidgetTester tester) => TestApp.start(
+    tester,
+    seed: (db) async {
+      await seedMockupGarage(db);
+      await (db.update(db.vehicles)..where((v) => v.id.equals(1))).write(
+        VehiclesCompanion(
+          regoExpiry: Value(DateTime(2026, 10, 10)),
+          batteryFitted: Value(DateTime(2022, 11, 2)),
+          tyresFitted: Value(DateTime(2024, 3, 1)),
+          tyresFittedKm: const Value(30500),
+        ),
+      );
+      await db
+          .into(db.expenses)
+          .insert(
+            ExpensesCompanion.insert(
+              vehicleId: 1,
+              category: ExpenseCategory.rego,
+              amountCents: 61200,
+              date: DateTime(2026, 9, 18),
+              title: const Value('CTP green slip'),
+            ),
+          );
+    },
+    physicalSize: const Size(780, 1688),
+    devicePixelRatio: 2,
+  );
+
+  testWidgets('16 rego checklist, tyres and battery', skip: skip, (
+    tester,
+  ) async {
+    final app = await bootWithUpkeep(tester);
+    await extraShot(tester, '16_home_rego');
+    await tester.tap(find.text('TOYOTA COROLLA'));
+    await app.settle(tester);
+    await extraShot(tester, '17_rego_checklist');
+    await tester.scrollUntilVisible(
+      find.text('TYRES & BATTERY'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -200));
+    await app.settle(tester);
+    await extraShot(tester, '18_tyres_battery');
+  });
 }
