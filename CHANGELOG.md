@@ -6,6 +6,34 @@ follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-11-09
+
+Car wash: cleaning checklists, paid washes logged for you, and wash
+history.
+
+### Added
+
+- **Car wash.** A "Wash & clean" card on each car's page shows when it was
+  last washed, this year's washes and spend, and how often you usually wash.
+  - **Start a wash** opens a cleaning checklist: pick how you're washing (at
+    home, automatic, hand wash, detail) and a list (Quick, Full clean,
+    Detail), and tick things off. Lists can be edited, with your own steps
+    added, and apply to every car.
+  - **Log paid wash** records an automatic, hand or detail wash with its
+    place and price, and adds it to Expenses as Car wash for you. Places are
+    remembered with their last price. A wash paid with a wash pass is logged
+    at $0.
+  - **Wash history** lists every wash by month, including Car wash expenses
+    logged before, with totals and how you tend to wash.
+  - Optional **wash reminder** per car (every 2 to 6 weeks), which also shows
+    in Coming up.
+- Backups now include washes and your edited checklists. Older backups still
+  restore.
+
+### Changed
+
+- The database moves to schema v5 (washes). Upgrades keep everything.
+
 ## [1.5.0] - 2026-10-27
 
 Keeping on top of the car: rego renewals step by step, tyre and battery
@@ -240,6 +268,7 @@ First release.
 - Fuel prices sit behind a `FuelPriceSource` interface, so other states can be
   added later. The NSW client uses the v1 (NSW-only) endpoints.
 
-[Unreleased]: https://github.com/SarveshP16/ServoBuddy/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/SarveshP16/ServoBuddy/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/SarveshP16/ServoBuddy/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/SarveshP16/ServoBuddy/compare/v1.2.0...v1.5.0
 [1.2.0]: https://github.com/SarveshP16/ServoBuddy/releases/tag/v1.2.0

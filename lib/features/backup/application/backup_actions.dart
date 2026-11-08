@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import '../../../core/providers.dart';
 import '../../settings/application/settings_controller.dart';
 import '../../settings/data/app_settings.dart';
+import '../../wash/application/wash_actions.dart';
+import '../../wash/domain/wash_checklist.dart';
 import '../data/backup_archive.dart';
 
 /// Where backup files go and come from: the phone's own save and open
@@ -52,6 +54,11 @@ class BackupActions {
       settings: (
         themeChoice: settings.themeChoice.name,
         garageTitle: settings.garageTitle,
+        washChecklists: {
+          for (final k in ChecklistKind.values)
+            if (_ref.read(washChecklistsProvider.notifier).isCustom(k))
+              k.name: encodeChecklist(_ref.read(washChecklistsProvider)[k]!),
+        },
       ),
       now: now,
     );
@@ -79,6 +86,13 @@ class BackupActions {
         ),
       );
       await settings.setGarageTitle(s.garageTitle);
+      final checklists = _ref.read(washChecklistsProvider.notifier);
+      for (final k in ChecklistKind.values) {
+        final items = decodeChecklist(s.washChecklists[k.name]);
+        items == null
+            ? await checklists.reset(k)
+            : await checklists.setItems(k, items);
+      }
     }
     return summary;
   }

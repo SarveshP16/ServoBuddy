@@ -16,6 +16,7 @@ class GarageRepository {
       _db.select(_db.serviceSchedules).get(),
       _db.select(_db.expenses).get(),
       _db.select(_db.recurringExpenses).get(),
+      _db.select(_db.washes).get(),
     ]);
     return Garage(
       vehicles: results[0].cast<Vehicle>(),
@@ -23,6 +24,7 @@ class GarageRepository {
       schedules: results[2].cast<ServiceSchedule>(),
       expenses: results[3].cast<Expense>(),
       recurring: results[4].cast<RecurringExpense>(),
+      washes: results[5].cast<Wash>(),
       today: _now(),
     );
   }
@@ -37,6 +39,7 @@ class GarageRepository {
         _db.serviceSchedules,
         _db.expenses,
         _db.recurringExpenses,
+        _db.washes,
       ]),
     )) {
       yield await load();

@@ -3,6 +3,7 @@ import 'package:servobuddy/features/expenses/domain/expense_category.dart';
 import 'package:servobuddy/features/vehicles/domain/body_type.dart';
 import 'package:servobuddy/features/vehicles/domain/fuel_type.dart';
 import 'package:servobuddy/features/vehicles/domain/vehicle_status.dart';
+import 'package:servobuddy/features/wash/domain/wash_type.dart';
 
 /// Plain data-class builders for pure-logic tests (no database).
 Vehicle vehicle({
@@ -18,6 +19,7 @@ Vehicle vehicle({
   DateTime? tyresFitted,
   int? tyresFittedKm,
   DateTime? batteryFitted,
+  int? washEveryDays,
 }) => Vehicle(
   id: id,
   make: make,
@@ -37,6 +39,7 @@ Vehicle vehicle({
   tyresFitted: tyresFitted,
   tyresFittedKm: tyresFittedKm,
   batteryFitted: batteryFitted,
+  washEveryDays: washEveryDays,
 );
 
 Expense expense({
@@ -89,3 +92,27 @@ OdometerReading reading(
   int id = 1,
   int vehicleId = 1,
 }) => OdometerReading(id: id, vehicleId: vehicleId, date: date, km: km);
+
+Wash wash({
+  int id = 1,
+  int vehicleId = 1,
+  required DateTime date,
+  WashType type = WashType.automatic,
+  String? place,
+  int amountCents = 0,
+  int? expenseId,
+}) => Wash(
+  id: id,
+  vehicleId: vehicleId,
+  date: date,
+  type: type,
+  place: place,
+  amountCents: amountCents,
+  usedPass: false,
+  expenseId: expenseId,
+  checklist: null,
+  itemsDone: null,
+  itemsTotal: null,
+  minutes: null,
+  notes: null,
+);

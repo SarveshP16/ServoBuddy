@@ -11,7 +11,13 @@ import '../../../core/files/image_store.dart';
 
 /// The settings that travel with a backup. Reminder-permission state stays
 /// with the phone it was granted on.
-typedef BackupSettings = ({String themeChoice, String garageTitle});
+typedef BackupSettings = ({
+  String themeChoice,
+  String garageTitle,
+
+  /// Edited cleaning checklists, by kind name, as saved in settings.
+  Map<String, String> washChecklists,
+});
 
 /// What a restore brought in, for the confirmation message.
 typedef RestoreSummary = ({
@@ -66,6 +72,7 @@ class BackupArchive {
       'settings': {
         'themeChoice': settings.themeChoice,
         'garageTitle': settings.garageTitle,
+        'washChecklists': settings.washChecklists,
       },
       'vehicles': [
         for (final v in vehicles)
@@ -86,6 +93,9 @@ class BackupArchive {
       'recurringExpenses': [
         for (final r in await _db.select(_db.recurringExpenses).get())
           r.toJson(),
+      ],
+      'washes': [
+        for (final w in await _db.select(_db.washes).get()) w.toJson(),
       ],
     };
     archive.addFile(
@@ -160,6 +170,8 @@ class BackupArchive {
     final readings = rows('odometerReadings').map(OdometerReading.fromJson);
     final schedules = rows('serviceSchedules').map(ServiceSchedule.fromJson);
     final recurring = rows('recurringExpenses').map(RecurringExpense.fromJson);
+    // Backups from before 1.6 have none.
+    final washes = rows('washes').map(Wash.fromJson);
 
     final oldPhotos = [
       for (final v in await _db.select(_db.vehicles).get()) v.photoPath,
@@ -168,6 +180,7 @@ class BackupArchive {
 
     await _db.transaction(() async {
       // Children first, though deleting cars would cascade anyway.
+      await _db.delete(_db.washes).go();
       await _db.delete(_db.recurringExpenses).go();
       await _db.delete(_db.expenses).go();
       await _db.delete(_db.serviceSchedules).go();
@@ -179,6 +192,7 @@ class BackupArchive {
         b.insertAll(_db.serviceSchedules, schedules);
         b.insertAll(_db.expenses, expenses);
         b.insertAll(_db.recurringExpenses, recurring);
+        b.insertAll(_db.washes, washes);
       });
     });
     for (final path in oldPhotos) {
@@ -194,6 +208,11 @@ class BackupArchive {
           ? (
               themeChoice: settings['themeChoice'] as String? ?? 'system',
               garageTitle: settings['garageTitle'] as String? ?? '',
+              washChecklists: {
+                for (final MapEntry(:key, :value)
+                    in (settings['washChecklists'] as Map? ?? const {}).entries)
+                  if (value is String) '$key': value,
+              },
             )
           : null,
     );

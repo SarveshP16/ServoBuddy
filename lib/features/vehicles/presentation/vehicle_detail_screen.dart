@@ -32,6 +32,7 @@ import 'widgets/retired_banner.dart';
 import 'widgets/vehicle_facts_card.dart';
 import 'widgets/vehicle_image.dart';
 import 'widgets/wear_parts_card.dart';
+import '../../wash/presentation/wash_card.dart';
 
 class VehicleDetailScreen extends ConsumerWidget {
   const VehicleDetailScreen({super.key, required this.vehicleId});
@@ -134,6 +135,8 @@ class VehicleDetailScreen extends ConsumerWidget {
                         if (!retired) ...[
                           const SizedBox(height: 16),
                           WearPartsCard(vehicle: v),
+                          const SizedBox(height: 16),
+                          WashCard(vehicle: v),
                         ],
                         SectionHeader(
                           title: 'Service history',

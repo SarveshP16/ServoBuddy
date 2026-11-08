@@ -1,3 +1,5 @@
+import '../features/wash/domain/wash_checklist.dart';
+
 /// Every path in the app, in one place.
 abstract final class AppRoutes {
   static const home = '/';
@@ -9,6 +11,12 @@ abstract final class AppRoutes {
   static String vehicle(int id) => '/vehicle/$id';
   static String editVehicle(int id) => '/vehicle/$id/edit';
   static String schedules(int id) => '/vehicle/$id/schedules';
+  static String wash(int id) => '/vehicle/$id/wash';
+  static String washes(int id) => '/vehicle/$id/washes';
+
+  /// Edit one cleaning checklist ("quick", "full", "detail").
+  static String washChecklist(ChecklistKind kind) =>
+      '/wash-checklist/${kind.name}';
 
   /// Log expense, optionally preset. `category=service&schedule=3` is how
   /// "Add service record" and "Mark done" open the same form.

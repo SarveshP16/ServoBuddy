@@ -10,6 +10,7 @@ import 'package:servobuddy/core/database/app_database.dart';
 import 'package:servobuddy/features/expenses/domain/expense_category.dart';
 import 'package:servobuddy/features/expenses/domain/recurrence.dart';
 import 'package:servobuddy/features/vehicles/domain/vehicle_status.dart';
+import 'package:servobuddy/features/wash/domain/wash_type.dart';
 import 'package:servobuddy/features/settings/data/app_settings.dart';
 
 import 'support/harness.dart';
@@ -191,5 +192,109 @@ void main() {
     await tester.drag(find.byType(Scrollable).first, const Offset(0, -200));
     await app.settle(tester);
     await extraShot(tester, '18_tyres_battery');
+  });
+
+  // A few months of washes on the Corolla, and a 3-weekly reminder.
+  Future<TestApp> bootWithWashes(WidgetTester tester) => TestApp.start(
+    tester,
+    seed: (db) async {
+      await seedMockupGarage(db);
+      await (db.update(db.vehicles)..where((v) => v.id.equals(1))).write(
+        const VehiclesCompanion(washEveryDays: Value(21)),
+      );
+      Future<void> paid(DateTime d, WashType t, String place, int cents) async {
+        final e = await db
+            .into(db.expenses)
+            .insert(
+              ExpensesCompanion.insert(
+                vehicleId: 1,
+                category: ExpenseCategory.carWash,
+                amountCents: cents,
+                date: d,
+                title: Value(t.title),
+                notes: Value(place),
+              ),
+            );
+        await db
+            .into(db.washes)
+            .insert(
+              WashesCompanion.insert(
+                vehicleId: 1,
+                date: d,
+                type: t,
+                place: Value(place),
+                amountCents: Value(cents),
+                expenseId: Value(e),
+              ),
+            );
+      }
+
+      await paid(
+        DateTime(2026, 9, 11),
+        WashType.automatic,
+        'Westside Car Wash',
+        1800,
+      );
+      await db
+          .into(db.washes)
+          .insert(
+            WashesCompanion.insert(
+              vehicleId: 1,
+              date: DateTime(2026, 8, 24),
+              type: WashType.home,
+              checklist: const Value('full'),
+              itemsDone: const Value(10),
+              itemsTotal: const Value(10),
+              minutes: const Value(70),
+            ),
+          );
+      await paid(DateTime(2026, 8, 2), WashType.hand, 'Shine Bros', 3500);
+      await paid(
+        DateTime(2026, 7, 10),
+        WashType.automatic,
+        'Westside Car Wash',
+        1800,
+      );
+    },
+    physicalSize: const Size(780, 1688),
+    devicePixelRatio: 2,
+  );
+
+  testWidgets('19 car wash', skip: skip, (tester) async {
+    final app = await bootWithWashes(tester);
+    await tester.tap(find.text('TOYOTA COROLLA'));
+    await app.settle(tester);
+    await tester.scrollUntilVisible(
+      find.text('Start a wash'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -120));
+    await app.settle(tester);
+    await extraShot(tester, '19_wash_card');
+
+    await tester.tap(find.text('Log paid wash'));
+    await app.settle(tester);
+    await extraShot(tester, '21_paid_wash');
+    Navigator.of(tester.element(find.text('Log a paid wash'))).pop();
+    await app.settle(tester);
+
+    await tester.tap(find.text('Start a wash'));
+    await app.settle(tester);
+    for (final item in [
+      'Rinse off loose dirt',
+      'Wheels and tyres',
+      'Wash body, top down',
+    ]) {
+      await tester.tap(find.text(item));
+    }
+    await app.settle(tester);
+    await extraShot(tester, '20_wash_checklist');
+    await tester.tap(find.byTooltip('Close'));
+    await app.settle(tester);
+
+    await tester.tap(find.textContaining('Washed '));
+    await app.settle(tester);
+    await extraShot(tester, '22_wash_history');
   });
 }

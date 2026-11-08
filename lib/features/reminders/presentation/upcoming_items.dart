@@ -6,6 +6,7 @@ import '../../service/domain/service_due.dart';
 import '../../service/presentation/due_text.dart';
 import '../../vehicles/domain/vehicle_alert.dart';
 import '../../vehicles/domain/wear_parts.dart';
+import '../../wash/domain/wash_history.dart';
 import '../domain/nsw_slips.dart';
 
 /// Green and pink slips are listed once rego is this close.
@@ -19,6 +20,7 @@ enum UpcomingKind {
   pinkSlip,
   tyres,
   battery,
+  wash,
 }
 
 /// One thing coming up for one car, for the list behind Home's bell.
@@ -106,6 +108,28 @@ List<UpcomingItem> upcomingItems(Garage garage) {
           daysLeft: daysBetween(garage.today, age.replaceBy),
         ),
       );
+    }
+
+    // A wash, once the car's wash reminder comes within a week.
+    final history = washHistory(garage, v.id);
+    final washDue = nextWashDue(v, history, garage.today);
+    if (washDue != null) {
+      final days = daysBetween(garage.today, washDue);
+      if (days <= 7) {
+        final last = history.firstOrNull;
+        items.add(
+          UpcomingItem(
+            vehicle: v,
+            kind: UpcomingKind.wash,
+            title: days < 0 ? 'Wash overdue' : 'Wash due',
+            detail: last == null
+                ? 'No washes logged yet'
+                : 'Last washed ${formatDate(last.date)}',
+            urgent: false,
+            daysLeft: days,
+          ),
+        );
+      }
     }
 
     renewal(v.regoExpiry, UpcomingKind.rego, 'Rego');

@@ -22,6 +22,7 @@ class AppTextField extends StatelessWidget {
     this.onChanged,
     this.textInputAction,
     this.autofocus = false,
+    this.onSubmitted,
   });
 
   final TextEditingController controller;
@@ -38,6 +39,7 @@ class AppTextField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final TextInputAction? textInputAction;
   final bool autofocus;
+  final ValueChanged<String>? onSubmitted;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +57,7 @@ class AppTextField extends StatelessWidget {
       onChanged: onChanged,
       autofocus: autofocus,
       textInputAction: textInputAction,
+      onFieldSubmitted: onSubmitted,
       decoration: InputDecoration(
         hintText: hint,
         prefixText: prefixText,

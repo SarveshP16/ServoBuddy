@@ -201,6 +201,17 @@ class $VehiclesTable extends Vehicles with TableInfo<$VehiclesTable, Vehicle> {
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _washEveryDaysMeta = const VerificationMeta(
+    'washEveryDays',
+  );
+  @override
+  late final GeneratedColumn<int> washEveryDays = GeneratedColumn<int>(
+    'wash_every_days',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -221,6 +232,7 @@ class $VehiclesTable extends Vehicles with TableInfo<$VehiclesTable, Vehicle> {
     tyresFitted,
     tyresFittedKm,
     batteryFitted,
+    washEveryDays,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -344,6 +356,15 @@ class $VehiclesTable extends Vehicles with TableInfo<$VehiclesTable, Vehicle> {
         ),
       );
     }
+    if (data.containsKey('wash_every_days')) {
+      context.handle(
+        _washEveryDaysMeta,
+        washEveryDays.isAcceptableOrUnknown(
+          data['wash_every_days']!,
+          _washEveryDaysMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -431,6 +452,10 @@ class $VehiclesTable extends Vehicles with TableInfo<$VehiclesTable, Vehicle> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}battery_fitted'],
       ),
+      washEveryDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}wash_every_days'],
+      ),
     );
   }
 
@@ -481,6 +506,9 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
   final DateTime? tyresFitted;
   final int? tyresFittedKm;
   final DateTime? batteryFitted;
+
+  /// v5: remind to wash this many days after the last one; null = off.
+  final int? washEveryDays;
   const Vehicle({
     required this.id,
     required this.make,
@@ -500,6 +528,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
     this.tyresFitted,
     this.tyresFittedKm,
     this.batteryFitted,
+    this.washEveryDays,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -552,6 +581,9 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
     if (!nullToAbsent || batteryFitted != null) {
       map['battery_fitted'] = Variable<DateTime>(batteryFitted);
     }
+    if (!nullToAbsent || washEveryDays != null) {
+      map['wash_every_days'] = Variable<int>(washEveryDays);
+    }
     return map;
   }
 
@@ -591,6 +623,9 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
       batteryFitted: batteryFitted == null && nullToAbsent
           ? const Value.absent()
           : Value(batteryFitted),
+      washEveryDays: washEveryDays == null && nullToAbsent
+          ? const Value.absent()
+          : Value(washEveryDays),
     );
   }
 
@@ -624,6 +659,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
       tyresFitted: serializer.fromJson<DateTime?>(json['tyresFitted']),
       tyresFittedKm: serializer.fromJson<int?>(json['tyresFittedKm']),
       batteryFitted: serializer.fromJson<DateTime?>(json['batteryFitted']),
+      washEveryDays: serializer.fromJson<int?>(json['washEveryDays']),
     );
   }
   @override
@@ -654,6 +690,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
       'tyresFitted': serializer.toJson<DateTime?>(tyresFitted),
       'tyresFittedKm': serializer.toJson<int?>(tyresFittedKm),
       'batteryFitted': serializer.toJson<DateTime?>(batteryFitted),
+      'washEveryDays': serializer.toJson<int?>(washEveryDays),
     };
   }
 
@@ -676,6 +713,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
     Value<DateTime?> tyresFitted = const Value.absent(),
     Value<int?> tyresFittedKm = const Value.absent(),
     Value<DateTime?> batteryFitted = const Value.absent(),
+    Value<int?> washEveryDays = const Value.absent(),
   }) => Vehicle(
     id: id ?? this.id,
     make: make ?? this.make,
@@ -703,6 +741,9 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
     batteryFitted: batteryFitted.present
         ? batteryFitted.value
         : this.batteryFitted,
+    washEveryDays: washEveryDays.present
+        ? washEveryDays.value
+        : this.washEveryDays,
   );
   Vehicle copyWithCompanion(VehiclesCompanion data) {
     return Vehicle(
@@ -736,6 +777,9 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
       batteryFitted: data.batteryFitted.present
           ? data.batteryFitted.value
           : this.batteryFitted,
+      washEveryDays: data.washEveryDays.present
+          ? data.washEveryDays.value
+          : this.washEveryDays,
     );
   }
 
@@ -759,7 +803,8 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
           ..write('salePriceCents: $salePriceCents, ')
           ..write('tyresFitted: $tyresFitted, ')
           ..write('tyresFittedKm: $tyresFittedKm, ')
-          ..write('batteryFitted: $batteryFitted')
+          ..write('batteryFitted: $batteryFitted, ')
+          ..write('washEveryDays: $washEveryDays')
           ..write(')'))
         .toString();
   }
@@ -784,6 +829,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
     tyresFitted,
     tyresFittedKm,
     batteryFitted,
+    washEveryDays,
   );
   @override
   bool operator ==(Object other) =>
@@ -806,7 +852,8 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
           other.salePriceCents == this.salePriceCents &&
           other.tyresFitted == this.tyresFitted &&
           other.tyresFittedKm == this.tyresFittedKm &&
-          other.batteryFitted == this.batteryFitted);
+          other.batteryFitted == this.batteryFitted &&
+          other.washEveryDays == this.washEveryDays);
 }
 
 class VehiclesCompanion extends UpdateCompanion<Vehicle> {
@@ -828,6 +875,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
   final Value<DateTime?> tyresFitted;
   final Value<int?> tyresFittedKm;
   final Value<DateTime?> batteryFitted;
+  final Value<int?> washEveryDays;
   const VehiclesCompanion({
     this.id = const Value.absent(),
     this.make = const Value.absent(),
@@ -847,6 +895,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     this.tyresFitted = const Value.absent(),
     this.tyresFittedKm = const Value.absent(),
     this.batteryFitted = const Value.absent(),
+    this.washEveryDays = const Value.absent(),
   });
   VehiclesCompanion.insert({
     this.id = const Value.absent(),
@@ -867,6 +916,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     this.tyresFitted = const Value.absent(),
     this.tyresFittedKm = const Value.absent(),
     this.batteryFitted = const Value.absent(),
+    this.washEveryDays = const Value.absent(),
   }) : make = Value(make),
        model = Value(model),
        year = Value(year),
@@ -892,6 +942,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     Expression<DateTime>? tyresFitted,
     Expression<int>? tyresFittedKm,
     Expression<DateTime>? batteryFitted,
+    Expression<int>? washEveryDays,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -912,6 +963,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
       if (tyresFitted != null) 'tyres_fitted': tyresFitted,
       if (tyresFittedKm != null) 'tyres_fitted_km': tyresFittedKm,
       if (batteryFitted != null) 'battery_fitted': batteryFitted,
+      if (washEveryDays != null) 'wash_every_days': washEveryDays,
     });
   }
 
@@ -934,6 +986,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     Value<DateTime?>? tyresFitted,
     Value<int?>? tyresFittedKm,
     Value<DateTime?>? batteryFitted,
+    Value<int?>? washEveryDays,
   }) {
     return VehiclesCompanion(
       id: id ?? this.id,
@@ -954,6 +1007,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
       tyresFitted: tyresFitted ?? this.tyresFitted,
       tyresFittedKm: tyresFittedKm ?? this.tyresFittedKm,
       batteryFitted: batteryFitted ?? this.batteryFitted,
+      washEveryDays: washEveryDays ?? this.washEveryDays,
     );
   }
 
@@ -1020,6 +1074,9 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     if (batteryFitted.present) {
       map['battery_fitted'] = Variable<DateTime>(batteryFitted.value);
     }
+    if (washEveryDays.present) {
+      map['wash_every_days'] = Variable<int>(washEveryDays.value);
+    }
     return map;
   }
 
@@ -1043,7 +1100,8 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
           ..write('salePriceCents: $salePriceCents, ')
           ..write('tyresFitted: $tyresFitted, ')
           ..write('tyresFittedKm: $tyresFittedKm, ')
-          ..write('batteryFitted: $batteryFitted')
+          ..write('batteryFitted: $batteryFitted, ')
+          ..write('washEveryDays: $washEveryDays')
           ..write(')'))
         .toString();
   }
@@ -3129,6 +3187,771 @@ class RecurringExpensesCompanion extends UpdateCompanion<RecurringExpense> {
   }
 }
 
+class $WashesTable extends Washes with TableInfo<$WashesTable, Wash> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WashesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _vehicleIdMeta = const VerificationMeta(
+    'vehicleId',
+  );
+  @override
+  late final GeneratedColumn<int> vehicleId = GeneratedColumn<int>(
+    'vehicle_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES vehicles (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<WashType, String> type =
+      GeneratedColumn<String>(
+        'type',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<WashType>($WashesTable.$convertertype);
+  static const VerificationMeta _placeMeta = const VerificationMeta('place');
+  @override
+  late final GeneratedColumn<String> place = GeneratedColumn<String>(
+    'place',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _amountCentsMeta = const VerificationMeta(
+    'amountCents',
+  );
+  @override
+  late final GeneratedColumn<int> amountCents = GeneratedColumn<int>(
+    'amount_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _usedPassMeta = const VerificationMeta(
+    'usedPass',
+  );
+  @override
+  late final GeneratedColumn<bool> usedPass = GeneratedColumn<bool>(
+    'used_pass',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("used_pass" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _expenseIdMeta = const VerificationMeta(
+    'expenseId',
+  );
+  @override
+  late final GeneratedColumn<int> expenseId = GeneratedColumn<int>(
+    'expense_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES expenses (id) ON DELETE SET NULL',
+    ),
+  );
+  static const VerificationMeta _checklistMeta = const VerificationMeta(
+    'checklist',
+  );
+  @override
+  late final GeneratedColumn<String> checklist = GeneratedColumn<String>(
+    'checklist',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _itemsDoneMeta = const VerificationMeta(
+    'itemsDone',
+  );
+  @override
+  late final GeneratedColumn<int> itemsDone = GeneratedColumn<int>(
+    'items_done',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _itemsTotalMeta = const VerificationMeta(
+    'itemsTotal',
+  );
+  @override
+  late final GeneratedColumn<int> itemsTotal = GeneratedColumn<int>(
+    'items_total',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _minutesMeta = const VerificationMeta(
+    'minutes',
+  );
+  @override
+  late final GeneratedColumn<int> minutes = GeneratedColumn<int>(
+    'minutes',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    vehicleId,
+    date,
+    type,
+    place,
+    amountCents,
+    usedPass,
+    expenseId,
+    checklist,
+    itemsDone,
+    itemsTotal,
+    minutes,
+    notes,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'washes';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Wash> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('vehicle_id')) {
+      context.handle(
+        _vehicleIdMeta,
+        vehicleId.isAcceptableOrUnknown(data['vehicle_id']!, _vehicleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_vehicleIdMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('place')) {
+      context.handle(
+        _placeMeta,
+        place.isAcceptableOrUnknown(data['place']!, _placeMeta),
+      );
+    }
+    if (data.containsKey('amount_cents')) {
+      context.handle(
+        _amountCentsMeta,
+        amountCents.isAcceptableOrUnknown(
+          data['amount_cents']!,
+          _amountCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('used_pass')) {
+      context.handle(
+        _usedPassMeta,
+        usedPass.isAcceptableOrUnknown(data['used_pass']!, _usedPassMeta),
+      );
+    }
+    if (data.containsKey('expense_id')) {
+      context.handle(
+        _expenseIdMeta,
+        expenseId.isAcceptableOrUnknown(data['expense_id']!, _expenseIdMeta),
+      );
+    }
+    if (data.containsKey('checklist')) {
+      context.handle(
+        _checklistMeta,
+        checklist.isAcceptableOrUnknown(data['checklist']!, _checklistMeta),
+      );
+    }
+    if (data.containsKey('items_done')) {
+      context.handle(
+        _itemsDoneMeta,
+        itemsDone.isAcceptableOrUnknown(data['items_done']!, _itemsDoneMeta),
+      );
+    }
+    if (data.containsKey('items_total')) {
+      context.handle(
+        _itemsTotalMeta,
+        itemsTotal.isAcceptableOrUnknown(data['items_total']!, _itemsTotalMeta),
+      );
+    }
+    if (data.containsKey('minutes')) {
+      context.handle(
+        _minutesMeta,
+        minutes.isAcceptableOrUnknown(data['minutes']!, _minutesMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Wash map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Wash(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      vehicleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}vehicle_id'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      )!,
+      type: $WashesTable.$convertertype.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}type'],
+        )!,
+      ),
+      place: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}place'],
+      ),
+      amountCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_cents'],
+      )!,
+      usedPass: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}used_pass'],
+      )!,
+      expenseId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}expense_id'],
+      ),
+      checklist: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}checklist'],
+      ),
+      itemsDone: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}items_done'],
+      ),
+      itemsTotal: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}items_total'],
+      ),
+      minutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}minutes'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+    );
+  }
+
+  @override
+  $WashesTable createAlias(String alias) {
+    return $WashesTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<WashType, String, String> $convertertype =
+      const EnumNameConverter<WashType>(WashType.values);
+}
+
+class Wash extends DataClass implements Insertable<Wash> {
+  final int id;
+  final int vehicleId;
+  final DateTime date;
+  final WashType type;
+
+  /// "Westside Car Wash". Remembered with its price for next time.
+  final String? place;
+  final int amountCents;
+
+  /// Paid with a wash pass (itself a recurring cost), so logged at $0.
+  final bool usedPass;
+  final int? expenseId;
+
+  /// The checklist used ("full"), and how much of it was ticked.
+  final String? checklist;
+  final int? itemsDone;
+  final int? itemsTotal;
+
+  /// How long it took, from Start to Finish.
+  final int? minutes;
+  final String? notes;
+  const Wash({
+    required this.id,
+    required this.vehicleId,
+    required this.date,
+    required this.type,
+    this.place,
+    required this.amountCents,
+    required this.usedPass,
+    this.expenseId,
+    this.checklist,
+    this.itemsDone,
+    this.itemsTotal,
+    this.minutes,
+    this.notes,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['vehicle_id'] = Variable<int>(vehicleId);
+    map['date'] = Variable<DateTime>(date);
+    {
+      map['type'] = Variable<String>($WashesTable.$convertertype.toSql(type));
+    }
+    if (!nullToAbsent || place != null) {
+      map['place'] = Variable<String>(place);
+    }
+    map['amount_cents'] = Variable<int>(amountCents);
+    map['used_pass'] = Variable<bool>(usedPass);
+    if (!nullToAbsent || expenseId != null) {
+      map['expense_id'] = Variable<int>(expenseId);
+    }
+    if (!nullToAbsent || checklist != null) {
+      map['checklist'] = Variable<String>(checklist);
+    }
+    if (!nullToAbsent || itemsDone != null) {
+      map['items_done'] = Variable<int>(itemsDone);
+    }
+    if (!nullToAbsent || itemsTotal != null) {
+      map['items_total'] = Variable<int>(itemsTotal);
+    }
+    if (!nullToAbsent || minutes != null) {
+      map['minutes'] = Variable<int>(minutes);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    return map;
+  }
+
+  WashesCompanion toCompanion(bool nullToAbsent) {
+    return WashesCompanion(
+      id: Value(id),
+      vehicleId: Value(vehicleId),
+      date: Value(date),
+      type: Value(type),
+      place: place == null && nullToAbsent
+          ? const Value.absent()
+          : Value(place),
+      amountCents: Value(amountCents),
+      usedPass: Value(usedPass),
+      expenseId: expenseId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expenseId),
+      checklist: checklist == null && nullToAbsent
+          ? const Value.absent()
+          : Value(checklist),
+      itemsDone: itemsDone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(itemsDone),
+      itemsTotal: itemsTotal == null && nullToAbsent
+          ? const Value.absent()
+          : Value(itemsTotal),
+      minutes: minutes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(minutes),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+    );
+  }
+
+  factory Wash.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Wash(
+      id: serializer.fromJson<int>(json['id']),
+      vehicleId: serializer.fromJson<int>(json['vehicleId']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      type: $WashesTable.$convertertype.fromJson(
+        serializer.fromJson<String>(json['type']),
+      ),
+      place: serializer.fromJson<String?>(json['place']),
+      amountCents: serializer.fromJson<int>(json['amountCents']),
+      usedPass: serializer.fromJson<bool>(json['usedPass']),
+      expenseId: serializer.fromJson<int?>(json['expenseId']),
+      checklist: serializer.fromJson<String?>(json['checklist']),
+      itemsDone: serializer.fromJson<int?>(json['itemsDone']),
+      itemsTotal: serializer.fromJson<int?>(json['itemsTotal']),
+      minutes: serializer.fromJson<int?>(json['minutes']),
+      notes: serializer.fromJson<String?>(json['notes']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'vehicleId': serializer.toJson<int>(vehicleId),
+      'date': serializer.toJson<DateTime>(date),
+      'type': serializer.toJson<String>(
+        $WashesTable.$convertertype.toJson(type),
+      ),
+      'place': serializer.toJson<String?>(place),
+      'amountCents': serializer.toJson<int>(amountCents),
+      'usedPass': serializer.toJson<bool>(usedPass),
+      'expenseId': serializer.toJson<int?>(expenseId),
+      'checklist': serializer.toJson<String?>(checklist),
+      'itemsDone': serializer.toJson<int?>(itemsDone),
+      'itemsTotal': serializer.toJson<int?>(itemsTotal),
+      'minutes': serializer.toJson<int?>(minutes),
+      'notes': serializer.toJson<String?>(notes),
+    };
+  }
+
+  Wash copyWith({
+    int? id,
+    int? vehicleId,
+    DateTime? date,
+    WashType? type,
+    Value<String?> place = const Value.absent(),
+    int? amountCents,
+    bool? usedPass,
+    Value<int?> expenseId = const Value.absent(),
+    Value<String?> checklist = const Value.absent(),
+    Value<int?> itemsDone = const Value.absent(),
+    Value<int?> itemsTotal = const Value.absent(),
+    Value<int?> minutes = const Value.absent(),
+    Value<String?> notes = const Value.absent(),
+  }) => Wash(
+    id: id ?? this.id,
+    vehicleId: vehicleId ?? this.vehicleId,
+    date: date ?? this.date,
+    type: type ?? this.type,
+    place: place.present ? place.value : this.place,
+    amountCents: amountCents ?? this.amountCents,
+    usedPass: usedPass ?? this.usedPass,
+    expenseId: expenseId.present ? expenseId.value : this.expenseId,
+    checklist: checklist.present ? checklist.value : this.checklist,
+    itemsDone: itemsDone.present ? itemsDone.value : this.itemsDone,
+    itemsTotal: itemsTotal.present ? itemsTotal.value : this.itemsTotal,
+    minutes: minutes.present ? minutes.value : this.minutes,
+    notes: notes.present ? notes.value : this.notes,
+  );
+  Wash copyWithCompanion(WashesCompanion data) {
+    return Wash(
+      id: data.id.present ? data.id.value : this.id,
+      vehicleId: data.vehicleId.present ? data.vehicleId.value : this.vehicleId,
+      date: data.date.present ? data.date.value : this.date,
+      type: data.type.present ? data.type.value : this.type,
+      place: data.place.present ? data.place.value : this.place,
+      amountCents: data.amountCents.present
+          ? data.amountCents.value
+          : this.amountCents,
+      usedPass: data.usedPass.present ? data.usedPass.value : this.usedPass,
+      expenseId: data.expenseId.present ? data.expenseId.value : this.expenseId,
+      checklist: data.checklist.present ? data.checklist.value : this.checklist,
+      itemsDone: data.itemsDone.present ? data.itemsDone.value : this.itemsDone,
+      itemsTotal: data.itemsTotal.present
+          ? data.itemsTotal.value
+          : this.itemsTotal,
+      minutes: data.minutes.present ? data.minutes.value : this.minutes,
+      notes: data.notes.present ? data.notes.value : this.notes,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Wash(')
+          ..write('id: $id, ')
+          ..write('vehicleId: $vehicleId, ')
+          ..write('date: $date, ')
+          ..write('type: $type, ')
+          ..write('place: $place, ')
+          ..write('amountCents: $amountCents, ')
+          ..write('usedPass: $usedPass, ')
+          ..write('expenseId: $expenseId, ')
+          ..write('checklist: $checklist, ')
+          ..write('itemsDone: $itemsDone, ')
+          ..write('itemsTotal: $itemsTotal, ')
+          ..write('minutes: $minutes, ')
+          ..write('notes: $notes')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    vehicleId,
+    date,
+    type,
+    place,
+    amountCents,
+    usedPass,
+    expenseId,
+    checklist,
+    itemsDone,
+    itemsTotal,
+    minutes,
+    notes,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Wash &&
+          other.id == this.id &&
+          other.vehicleId == this.vehicleId &&
+          other.date == this.date &&
+          other.type == this.type &&
+          other.place == this.place &&
+          other.amountCents == this.amountCents &&
+          other.usedPass == this.usedPass &&
+          other.expenseId == this.expenseId &&
+          other.checklist == this.checklist &&
+          other.itemsDone == this.itemsDone &&
+          other.itemsTotal == this.itemsTotal &&
+          other.minutes == this.minutes &&
+          other.notes == this.notes);
+}
+
+class WashesCompanion extends UpdateCompanion<Wash> {
+  final Value<int> id;
+  final Value<int> vehicleId;
+  final Value<DateTime> date;
+  final Value<WashType> type;
+  final Value<String?> place;
+  final Value<int> amountCents;
+  final Value<bool> usedPass;
+  final Value<int?> expenseId;
+  final Value<String?> checklist;
+  final Value<int?> itemsDone;
+  final Value<int?> itemsTotal;
+  final Value<int?> minutes;
+  final Value<String?> notes;
+  const WashesCompanion({
+    this.id = const Value.absent(),
+    this.vehicleId = const Value.absent(),
+    this.date = const Value.absent(),
+    this.type = const Value.absent(),
+    this.place = const Value.absent(),
+    this.amountCents = const Value.absent(),
+    this.usedPass = const Value.absent(),
+    this.expenseId = const Value.absent(),
+    this.checklist = const Value.absent(),
+    this.itemsDone = const Value.absent(),
+    this.itemsTotal = const Value.absent(),
+    this.minutes = const Value.absent(),
+    this.notes = const Value.absent(),
+  });
+  WashesCompanion.insert({
+    this.id = const Value.absent(),
+    required int vehicleId,
+    required DateTime date,
+    required WashType type,
+    this.place = const Value.absent(),
+    this.amountCents = const Value.absent(),
+    this.usedPass = const Value.absent(),
+    this.expenseId = const Value.absent(),
+    this.checklist = const Value.absent(),
+    this.itemsDone = const Value.absent(),
+    this.itemsTotal = const Value.absent(),
+    this.minutes = const Value.absent(),
+    this.notes = const Value.absent(),
+  }) : vehicleId = Value(vehicleId),
+       date = Value(date),
+       type = Value(type);
+  static Insertable<Wash> custom({
+    Expression<int>? id,
+    Expression<int>? vehicleId,
+    Expression<DateTime>? date,
+    Expression<String>? type,
+    Expression<String>? place,
+    Expression<int>? amountCents,
+    Expression<bool>? usedPass,
+    Expression<int>? expenseId,
+    Expression<String>? checklist,
+    Expression<int>? itemsDone,
+    Expression<int>? itemsTotal,
+    Expression<int>? minutes,
+    Expression<String>? notes,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (vehicleId != null) 'vehicle_id': vehicleId,
+      if (date != null) 'date': date,
+      if (type != null) 'type': type,
+      if (place != null) 'place': place,
+      if (amountCents != null) 'amount_cents': amountCents,
+      if (usedPass != null) 'used_pass': usedPass,
+      if (expenseId != null) 'expense_id': expenseId,
+      if (checklist != null) 'checklist': checklist,
+      if (itemsDone != null) 'items_done': itemsDone,
+      if (itemsTotal != null) 'items_total': itemsTotal,
+      if (minutes != null) 'minutes': minutes,
+      if (notes != null) 'notes': notes,
+    });
+  }
+
+  WashesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? vehicleId,
+    Value<DateTime>? date,
+    Value<WashType>? type,
+    Value<String?>? place,
+    Value<int>? amountCents,
+    Value<bool>? usedPass,
+    Value<int?>? expenseId,
+    Value<String?>? checklist,
+    Value<int?>? itemsDone,
+    Value<int?>? itemsTotal,
+    Value<int?>? minutes,
+    Value<String?>? notes,
+  }) {
+    return WashesCompanion(
+      id: id ?? this.id,
+      vehicleId: vehicleId ?? this.vehicleId,
+      date: date ?? this.date,
+      type: type ?? this.type,
+      place: place ?? this.place,
+      amountCents: amountCents ?? this.amountCents,
+      usedPass: usedPass ?? this.usedPass,
+      expenseId: expenseId ?? this.expenseId,
+      checklist: checklist ?? this.checklist,
+      itemsDone: itemsDone ?? this.itemsDone,
+      itemsTotal: itemsTotal ?? this.itemsTotal,
+      minutes: minutes ?? this.minutes,
+      notes: notes ?? this.notes,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (vehicleId.present) {
+      map['vehicle_id'] = Variable<int>(vehicleId.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(
+        $WashesTable.$convertertype.toSql(type.value),
+      );
+    }
+    if (place.present) {
+      map['place'] = Variable<String>(place.value);
+    }
+    if (amountCents.present) {
+      map['amount_cents'] = Variable<int>(amountCents.value);
+    }
+    if (usedPass.present) {
+      map['used_pass'] = Variable<bool>(usedPass.value);
+    }
+    if (expenseId.present) {
+      map['expense_id'] = Variable<int>(expenseId.value);
+    }
+    if (checklist.present) {
+      map['checklist'] = Variable<String>(checklist.value);
+    }
+    if (itemsDone.present) {
+      map['items_done'] = Variable<int>(itemsDone.value);
+    }
+    if (itemsTotal.present) {
+      map['items_total'] = Variable<int>(itemsTotal.value);
+    }
+    if (minutes.present) {
+      map['minutes'] = Variable<int>(minutes.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WashesCompanion(')
+          ..write('id: $id, ')
+          ..write('vehicleId: $vehicleId, ')
+          ..write('date: $date, ')
+          ..write('type: $type, ')
+          ..write('place: $place, ')
+          ..write('amountCents: $amountCents, ')
+          ..write('usedPass: $usedPass, ')
+          ..write('expenseId: $expenseId, ')
+          ..write('checklist: $checklist, ')
+          ..write('itemsDone: $itemsDone, ')
+          ..write('itemsTotal: $itemsTotal, ')
+          ..write('minutes: $minutes, ')
+          ..write('notes: $notes')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3142,6 +3965,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ExpensesTable expenses = $ExpensesTable(this);
   late final $RecurringExpensesTable recurringExpenses =
       $RecurringExpensesTable(this);
+  late final $WashesTable washes = $WashesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3152,6 +3976,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     serviceSchedules,
     expenses,
     recurringExpenses,
+    washes,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -3190,6 +4015,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ),
       result: [TableUpdate('recurring_expenses', kind: UpdateKind.delete)],
     ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'vehicles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('washes', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'expenses',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('washes', kind: UpdateKind.update)],
+    ),
   ]);
 }
 
@@ -3212,6 +4051,7 @@ typedef $$VehiclesTableCreateCompanionBuilder = VehiclesCompanion Function({
   Value<DateTime?> tyresFitted,
   Value<int?> tyresFittedKm,
   Value<DateTime?> batteryFitted,
+  Value<int?> washEveryDays,
 });
 typedef $$VehiclesTableUpdateCompanionBuilder = VehiclesCompanion Function({
   Value<int> id,
@@ -3232,6 +4072,7 @@ typedef $$VehiclesTableUpdateCompanionBuilder = VehiclesCompanion Function({
   Value<DateTime?> tyresFitted,
   Value<int?> tyresFittedKm,
   Value<DateTime?> batteryFitted,
+  Value<int?> washEveryDays,
 });
 
 final class $$VehiclesTableReferences
@@ -3313,6 +4154,25 @@ final class $$VehiclesTableReferences
     final cache = $_typedResult.readTableOrNull(
       _recurringExpensesRefsTable($_db),
     );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WashesTable, List<Wash>> _washesRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.washes,
+    aliasName: 'vehicles__id__washes__vehicle_id',
+  );
+
+  $$WashesTableProcessedTableManager get washesRefs {
+    final manager = $$WashesTableTableManager(
+      $_db,
+      $_db.washes,
+    ).filter((f) => f.vehicleId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_washesRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -3421,6 +4281,11 @@ class $$VehiclesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get washEveryDays => $composableBuilder(
+    column: $table.washEveryDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
   Expression<bool> odometerReadingsRefs(
     Expression<bool> Function($$OdometerReadingsTableFilterComposer f) f,
   ) {
@@ -3512,6 +4377,31 @@ class $$VehiclesTableFilterComposer
           }) => $$RecurringExpensesTableFilterComposer(
             $db: $db,
             $table: $db.recurringExpenses,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> washesRefs(
+    Expression<bool> Function($$WashesTableFilterComposer f) f,
+  ) {
+    final $$WashesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.washes,
+      getReferencedColumn: (t) => t.vehicleId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WashesTableFilterComposer(
+            $db: $db,
+            $table: $db.washes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3620,6 +4510,11 @@ class $$VehiclesTableOrderingComposer
     column: $table.batteryFitted,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get washEveryDays => $composableBuilder(
+    column: $table.washEveryDays,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$VehiclesTableAnnotationComposer
@@ -3694,6 +4589,11 @@ class $$VehiclesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get batteryFitted => $composableBuilder(
     column: $table.batteryFitted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get washEveryDays => $composableBuilder(
+    column: $table.washEveryDays,
     builder: (column) => column,
   );
 
@@ -3797,6 +4697,31 @@ class $$VehiclesTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> washesRefs<T extends Object>(
+    Expression<T> Function($$WashesTableAnnotationComposer a) f,
+  ) {
+    final $$WashesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.washes,
+      getReferencedColumn: (t) => t.vehicleId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WashesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.washes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$VehiclesTableTableManager
@@ -3817,6 +4742,7 @@ class $$VehiclesTableTableManager
             bool serviceSchedulesRefs,
             bool expensesRefs,
             bool recurringExpensesRefs,
+            bool washesRefs,
           })
         > {
   $$VehiclesTableTableManager(_$AppDatabase db, $VehiclesTable table)
@@ -3850,6 +4776,7 @@ class $$VehiclesTableTableManager
                 Value<DateTime?> tyresFitted = const Value.absent(),
                 Value<int?> tyresFittedKm = const Value.absent(),
                 Value<DateTime?> batteryFitted = const Value.absent(),
+                Value<int?> washEveryDays = const Value.absent(),
               }) => VehiclesCompanion(
                 id: id,
                 make: make,
@@ -3869,6 +4796,7 @@ class $$VehiclesTableTableManager
                 tyresFitted: tyresFitted,
                 tyresFittedKm: tyresFittedKm,
                 batteryFitted: batteryFitted,
+                washEveryDays: washEveryDays,
               ),
           createCompanionCallback:
               ({
@@ -3890,6 +4818,7 @@ class $$VehiclesTableTableManager
                 Value<DateTime?> tyresFitted = const Value.absent(),
                 Value<int?> tyresFittedKm = const Value.absent(),
                 Value<DateTime?> batteryFitted = const Value.absent(),
+                Value<int?> washEveryDays = const Value.absent(),
               }) => VehiclesCompanion.insert(
                 id: id,
                 make: make,
@@ -3909,6 +4838,7 @@ class $$VehiclesTableTableManager
                 tyresFitted: tyresFitted,
                 tyresFittedKm: tyresFittedKm,
                 batteryFitted: batteryFitted,
+                washEveryDays: washEveryDays,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -3924,6 +4854,7 @@ class $$VehiclesTableTableManager
                 serviceSchedulesRefs = false,
                 expensesRefs = false,
                 recurringExpensesRefs = false,
+                washesRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -3932,6 +4863,7 @@ class $$VehiclesTableTableManager
                     if (serviceSchedulesRefs) db.serviceSchedules,
                     if (expensesRefs) db.expenses,
                     if (recurringExpensesRefs) db.recurringExpenses,
+                    if (washesRefs) db.washes,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -4020,6 +4952,27 @@ class $$VehiclesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (washesRefs)
+                        await $_getPrefetchedData<
+                          Vehicle,
+                          $VehiclesTable,
+                          Wash
+                        >(
+                          currentTable: table,
+                          referencedTable: $$VehiclesTableReferences
+                              ._washesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$VehiclesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).washesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.vehicleId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -4045,6 +4998,7 @@ typedef $$VehiclesTableProcessedTableManager =
         bool serviceSchedulesRefs,
         bool expensesRefs,
         bool recurringExpensesRefs,
+        bool washesRefs,
       })
     >;
 typedef $$OdometerReadingsTableCreateCompanionBuilder =
@@ -4862,6 +5816,25 @@ final class $$ExpensesTableReferences
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
+
+  static MultiTypedResultKey<$WashesTable, List<Wash>> _washesRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.washes,
+    aliasName: 'expenses__id__washes__expense_id',
+  );
+
+  $$WashesTableProcessedTableManager get washesRefs {
+    final manager = $$WashesTableTableManager(
+      $_db,
+      $_db.washes,
+    ).filter((f) => f.expenseId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_washesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$ExpensesTableFilterComposer
@@ -4968,6 +5941,31 @@ class $$ExpensesTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> washesRefs(
+    Expression<bool> Function($$WashesTableFilterComposer f) f,
+  ) {
+    final $$WashesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.washes,
+      getReferencedColumn: (t) => t.expenseId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WashesTableFilterComposer(
+            $db: $db,
+            $table: $db.washes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 }
 
@@ -5167,6 +6165,31 @@ class $$ExpensesTableAnnotationComposer
     );
     return composer;
   }
+
+  Expression<T> washesRefs<T extends Object>(
+    Expression<T> Function($$WashesTableAnnotationComposer a) f,
+  ) {
+    final $$WashesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.washes,
+      getReferencedColumn: (t) => t.expenseId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WashesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.washes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ExpensesTableTableManager
@@ -5182,7 +6205,11 @@ class $$ExpensesTableTableManager
           $$ExpensesTableUpdateCompanionBuilder,
           (Expense, $$ExpensesTableReferences),
           Expense,
-          PrefetchHooks Function({bool vehicleId, bool scheduleId})
+          PrefetchHooks Function({
+            bool vehicleId,
+            bool scheduleId,
+            bool washesRefs,
+          })
         > {
   $$ExpensesTableTableManager(_$AppDatabase db, $ExpensesTable table)
     : super(
@@ -5259,56 +6286,79 @@ class $$ExpensesTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({vehicleId = false, scheduleId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (vehicleId) {
-                      state = state.withJoin(
-                        currentTable: table,
-                        currentColumn: table.vehicleId,
-                        referencedTable: $$ExpensesTableReferences
-                            ._vehicleIdTable(db),
-                        referencedColumn: $$ExpensesTableReferences
-                            ._vehicleIdTable(db)
-                            .id,
-                      ) as T;
-                    }
-                    if (scheduleId) {
-                      state = state.withJoin(
-                        currentTable: table,
-                        currentColumn: table.scheduleId,
-                        referencedTable: $$ExpensesTableReferences
-                            ._scheduleIdTable(db),
-                        referencedColumn: $$ExpensesTableReferences
-                            ._scheduleIdTable(db)
-                            .id,
-                      ) as T;
-                    }
+          prefetchHooksCallback:
+              ({vehicleId = false, scheduleId = false, washesRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [if (washesRefs) db.washes],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (vehicleId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.vehicleId,
+                            referencedTable: $$ExpensesTableReferences
+                                ._vehicleIdTable(db),
+                            referencedColumn: $$ExpensesTableReferences
+                                ._vehicleIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+                        if (scheduleId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.scheduleId,
+                            referencedTable: $$ExpensesTableReferences
+                                ._scheduleIdTable(db),
+                            referencedColumn: $$ExpensesTableReferences
+                                ._scheduleIdTable(db)
+                                .id,
+                          ) as T;
+                        }
 
-                    return state;
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (washesRefs)
+                        await $_getPrefetchedData<
+                          Expense,
+                          $ExpensesTable,
+                          Wash
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ExpensesTableReferences
+                              ._washesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ExpensesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).washesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.expenseId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
                   },
-              getPrefetchedDataCallback: (items) async {
-                return [];
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -5325,7 +6375,7 @@ typedef $$ExpensesTableProcessedTableManager =
       $$ExpensesTableUpdateCompanionBuilder,
       (Expense, $$ExpensesTableReferences),
       Expense,
-      PrefetchHooks Function({bool vehicleId, bool scheduleId})
+      PrefetchHooks Function({bool vehicleId, bool scheduleId, bool washesRefs})
     >;
 typedef $$RecurringExpensesTableCreateCompanionBuilder =
     RecurringExpensesCompanion Function({
@@ -5732,6 +6782,554 @@ typedef $$RecurringExpensesTableProcessedTableManager =
       RecurringExpense,
       PrefetchHooks Function({bool vehicleId})
     >;
+typedef $$WashesTableCreateCompanionBuilder = WashesCompanion Function({
+  Value<int> id,
+  required int vehicleId,
+  required DateTime date,
+  required WashType type,
+  Value<String?> place,
+  Value<int> amountCents,
+  Value<bool> usedPass,
+  Value<int?> expenseId,
+  Value<String?> checklist,
+  Value<int?> itemsDone,
+  Value<int?> itemsTotal,
+  Value<int?> minutes,
+  Value<String?> notes,
+});
+typedef $$WashesTableUpdateCompanionBuilder = WashesCompanion Function({
+  Value<int> id,
+  Value<int> vehicleId,
+  Value<DateTime> date,
+  Value<WashType> type,
+  Value<String?> place,
+  Value<int> amountCents,
+  Value<bool> usedPass,
+  Value<int?> expenseId,
+  Value<String?> checklist,
+  Value<int?> itemsDone,
+  Value<int?> itemsTotal,
+  Value<int?> minutes,
+  Value<String?> notes,
+});
+
+final class $$WashesTableReferences
+    extends BaseReferences<_$AppDatabase, $WashesTable, Wash> {
+  $$WashesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $VehiclesTable _vehicleIdTable(_$AppDatabase db) =>
+      db.vehicles.createAlias('washes__vehicle_id__vehicles__id');
+
+  $$VehiclesTableProcessedTableManager get vehicleId {
+    final $_column = $_itemColumn<int>('vehicle_id')!;
+
+    final manager = $$VehiclesTableTableManager(
+      $_db,
+      $_db.vehicles,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_vehicleIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ExpensesTable _expenseIdTable(_$AppDatabase db) =>
+      db.expenses.createAlias('washes__expense_id__expenses__id');
+
+  $$ExpensesTableProcessedTableManager? get expenseId {
+    final $_column = $_itemColumn<int>('expense_id');
+    if ($_column == null) return null;
+    final manager = $$ExpensesTableTableManager(
+      $_db,
+      $_db.expenses,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_expenseIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$WashesTableFilterComposer
+    extends Composer<_$AppDatabase, $WashesTable> {
+  $$WashesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<WashType, WashType, String> get type =>
+      $composableBuilder(
+        column: $table.type,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<String> get place => $composableBuilder(
+    column: $table.place,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get usedPass => $composableBuilder(
+    column: $table.usedPass,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get checklist => $composableBuilder(
+    column: $table.checklist,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get itemsDone => $composableBuilder(
+    column: $table.itemsDone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get itemsTotal => $composableBuilder(
+    column: $table.itemsTotal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get minutes => $composableBuilder(
+    column: $table.minutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$VehiclesTableFilterComposer get vehicleId {
+    final $$VehiclesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableFilterComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExpensesTableFilterComposer get expenseId {
+    final $$ExpensesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.expenseId,
+      referencedTable: $db.expenses,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpensesTableFilterComposer(
+            $db: $db,
+            $table: $db.expenses,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WashesTableOrderingComposer
+    extends Composer<_$AppDatabase, $WashesTable> {
+  $$WashesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get place => $composableBuilder(
+    column: $table.place,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get usedPass => $composableBuilder(
+    column: $table.usedPass,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get checklist => $composableBuilder(
+    column: $table.checklist,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get itemsDone => $composableBuilder(
+    column: $table.itemsDone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get itemsTotal => $composableBuilder(
+    column: $table.itemsTotal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get minutes => $composableBuilder(
+    column: $table.minutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$VehiclesTableOrderingComposer get vehicleId {
+    final $$VehiclesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableOrderingComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExpensesTableOrderingComposer get expenseId {
+    final $$ExpensesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.expenseId,
+      referencedTable: $db.expenses,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpensesTableOrderingComposer(
+            $db: $db,
+            $table: $db.expenses,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WashesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WashesTable> {
+  $$WashesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<WashType, String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get place =>
+      $composableBuilder(column: $table.place, builder: (column) => column);
+
+  GeneratedColumn<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get usedPass =>
+      $composableBuilder(column: $table.usedPass, builder: (column) => column);
+
+  GeneratedColumn<String> get checklist =>
+      $composableBuilder(column: $table.checklist, builder: (column) => column);
+
+  GeneratedColumn<int> get itemsDone =>
+      $composableBuilder(column: $table.itemsDone, builder: (column) => column);
+
+  GeneratedColumn<int> get itemsTotal => $composableBuilder(
+    column: $table.itemsTotal,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get minutes =>
+      $composableBuilder(column: $table.minutes, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  $$VehiclesTableAnnotationComposer get vehicleId {
+    final $$VehiclesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExpensesTableAnnotationComposer get expenseId {
+    final $$ExpensesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.expenseId,
+      referencedTable: $db.expenses,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpensesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.expenses,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WashesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WashesTable,
+          Wash,
+          $$WashesTableFilterComposer,
+          $$WashesTableOrderingComposer,
+          $$WashesTableAnnotationComposer,
+          $$WashesTableCreateCompanionBuilder,
+          $$WashesTableUpdateCompanionBuilder,
+          (Wash, $$WashesTableReferences),
+          Wash,
+          PrefetchHooks Function({bool vehicleId, bool expenseId})
+        > {
+  $$WashesTableTableManager(_$AppDatabase db, $WashesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WashesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WashesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WashesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> vehicleId = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<WashType> type = const Value.absent(),
+                Value<String?> place = const Value.absent(),
+                Value<int> amountCents = const Value.absent(),
+                Value<bool> usedPass = const Value.absent(),
+                Value<int?> expenseId = const Value.absent(),
+                Value<String?> checklist = const Value.absent(),
+                Value<int?> itemsDone = const Value.absent(),
+                Value<int?> itemsTotal = const Value.absent(),
+                Value<int?> minutes = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+              }) => WashesCompanion(
+                id: id,
+                vehicleId: vehicleId,
+                date: date,
+                type: type,
+                place: place,
+                amountCents: amountCents,
+                usedPass: usedPass,
+                expenseId: expenseId,
+                checklist: checklist,
+                itemsDone: itemsDone,
+                itemsTotal: itemsTotal,
+                minutes: minutes,
+                notes: notes,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int vehicleId,
+                required DateTime date,
+                required WashType type,
+                Value<String?> place = const Value.absent(),
+                Value<int> amountCents = const Value.absent(),
+                Value<bool> usedPass = const Value.absent(),
+                Value<int?> expenseId = const Value.absent(),
+                Value<String?> checklist = const Value.absent(),
+                Value<int?> itemsDone = const Value.absent(),
+                Value<int?> itemsTotal = const Value.absent(),
+                Value<int?> minutes = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+              }) => WashesCompanion.insert(
+                id: id,
+                vehicleId: vehicleId,
+                date: date,
+                type: type,
+                place: place,
+                amountCents: amountCents,
+                usedPass: usedPass,
+                expenseId: expenseId,
+                checklist: checklist,
+                itemsDone: itemsDone,
+                itemsTotal: itemsTotal,
+                minutes: minutes,
+                notes: notes,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$WashesTable, Wash>(table),
+                  $$WashesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({vehicleId = false, expenseId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (vehicleId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.vehicleId,
+                        referencedTable: $$WashesTableReferences
+                            ._vehicleIdTable(db),
+                        referencedColumn: $$WashesTableReferences
+                            ._vehicleIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (expenseId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.expenseId,
+                        referencedTable: $$WashesTableReferences
+                            ._expenseIdTable(db),
+                        referencedColumn: $$WashesTableReferences
+                            ._expenseIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$WashesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WashesTable,
+      Wash,
+      $$WashesTableFilterComposer,
+      $$WashesTableOrderingComposer,
+      $$WashesTableAnnotationComposer,
+      $$WashesTableCreateCompanionBuilder,
+      $$WashesTableUpdateCompanionBuilder,
+      (Wash, $$WashesTableReferences),
+      Wash,
+      PrefetchHooks Function({bool vehicleId, bool expenseId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5746,4 +7344,6 @@ class $AppDatabaseManager {
       $$ExpensesTableTableManager(_db, _db.expenses);
   $$RecurringExpensesTableTableManager get recurringExpenses =>
       $$RecurringExpensesTableTableManager(_db, _db.recurringExpenses);
+  $$WashesTableTableManager get washes =>
+      $$WashesTableTableManager(_db, _db.washes);
 }

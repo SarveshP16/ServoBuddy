@@ -21,10 +21,12 @@ class Garage {
     required this.schedules,
     required List<Expense> expenses,
     this.recurring = const [],
+    List<Wash> washes = const [],
     required DateTime today,
   }) : today = dateOnly(today),
        allVehicles = [...vehicles]..sort(_primaryFirst),
-       expenses = [...expenses]..sort(_newestFirst);
+       expenses = [...expenses]..sort(_newestFirst),
+       washes = [...washes]..sort((a, b) => b.date.compareTo(a.date));
 
   static final empty = Garage(
     vehicles: const [],
@@ -58,6 +60,14 @@ class Garage {
 
   /// Newest first.
   final List<Expense> expenses;
+
+  /// Newest first.
+  final List<Wash> washes;
+
+  List<Wash> washesFor(int vehicleId) => [
+    for (final w in washes)
+      if (w.vehicleId == vehicleId) w,
+  ];
   final List<OdometerReading> readings;
 
   /// Repeating costs, in the order they were added.

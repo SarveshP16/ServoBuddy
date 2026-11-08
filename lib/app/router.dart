@@ -12,6 +12,10 @@ import '../features/settings/presentation/settings_screen.dart';
 import '../features/vehicles/presentation/vehicle_detail_screen.dart';
 import '../features/vehicles/presentation/vehicle_form_screen.dart';
 import '../features/vehicles/presentation/vehicles_screen.dart';
+import '../features/wash/domain/wash_checklist.dart';
+import '../features/wash/presentation/checklist_editor_screen.dart';
+import '../features/wash/presentation/wash_checklist_screen.dart';
+import '../features/wash/presentation/wash_history_screen.dart';
 import 'nav_shell.dart';
 import 'routes.dart';
 
@@ -45,6 +49,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: 'schedules',
             builder: (_, s) => SchedulesScreen(vehicleId: _id(s)),
           ),
+          GoRoute(
+            path: 'wash',
+            builder: (_, s) => WashChecklistScreen(vehicleId: _id(s)),
+          ),
+          GoRoute(
+            path: 'washes',
+            builder: (_, s) => WashHistoryScreen(vehicleId: _id(s)),
+          ),
         ],
       ),
       GoRoute(
@@ -72,6 +84,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/recurring/:id',
         builder: (_, s) => RecurringFormScreen(recurringId: _id(s)),
+      ),
+      GoRoute(
+        path: '/wash-checklist/:kind',
+        builder: (_, s) => ChecklistEditorScreen(
+          kind: ChecklistKind.values.firstWhere(
+            (k) => k.name == s.pathParameters['kind'],
+            orElse: () => ChecklistKind.full,
+          ),
+        ),
       ),
       GoRoute(
         path: '/expense/:id',

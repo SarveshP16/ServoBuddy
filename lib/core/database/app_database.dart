@@ -6,6 +6,7 @@ import '../../features/expenses/domain/recurrence.dart';
 import '../../features/vehicles/domain/body_type.dart';
 import '../../features/vehicles/domain/fuel_type.dart';
 import '../../features/vehicles/domain/vehicle_status.dart';
+import '../../features/wash/domain/wash_type.dart';
 import 'tables.dart';
 
 part 'app_database.g.dart';
@@ -17,6 +18,7 @@ part 'app_database.g.dart';
     ServiceSchedules,
     Expenses,
     RecurringExpenses,
+    Washes,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -26,7 +28,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.open() : super(driftDatabase(name: 'servobuddy'));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -44,6 +46,11 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(vehicles, vehicles.tyresFitted);
         await m.addColumn(vehicles, vehicles.tyresFittedKm);
         await m.addColumn(vehicles, vehicles.batteryFitted);
+      }
+      // v5: wash history and wash reminders.
+      if (from < 5) {
+        await m.createTable(washes);
+        await m.addColumn(vehicles, vehicles.washEveryDays);
       }
     },
     // Deleting a car must take its expenses, readings and schedules with it.

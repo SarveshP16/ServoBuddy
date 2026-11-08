@@ -11,13 +11,18 @@ import 'package:servobuddy/core/files/image_store.dart';
 import 'package:servobuddy/features/backup/data/backup_archive.dart';
 import 'package:servobuddy/features/expenses/domain/expense_category.dart';
 import 'package:servobuddy/features/vehicles/domain/vehicle_labels.dart';
+import 'package:servobuddy/features/wash/domain/wash_type.dart';
 
 import '../support/seed.dart';
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   final now = DateTime(2026, 10, 26, 9);
-  const settings = (themeChoice: 'dark', garageTitle: "Sam's Garage");
+  const settings = (
+    themeChoice: 'dark',
+    garageTitle: "Sam's Garage",
+    washChecklists: {'quick': '[{"section":"outside","label":"Hose off"}]'},
+  );
 
   late Directory tmp;
   setUp(() => tmp = Directory.systemTemp.createTempSync('servobuddy_backup'));
@@ -49,6 +54,17 @@ void main() {
     final firstExpense = (await db.select(db.expenses).get()).first;
     await (db.update(db.expenses)..where((e) => e.id.equals(firstExpense.id)))
         .write(ExpensesCompanion(receiptPath: Value(receipt.path)));
+    await db
+        .into(db.washes)
+        .insert(
+          WashesCompanion.insert(
+            vehicleId: 1,
+            date: DateTime(2026, 9, 1),
+            type: WashType.automatic,
+            place: const Value('Westside'),
+            amountCents: const Value(1800),
+          ),
+        );
     return archive.create(settings: settings, now: now);
   }
 
@@ -59,7 +75,10 @@ void main() {
 
     expect(summary.vehicles, 3);
     expect(summary.photos, 2);
-    expect(summary.settings, settings);
+    expect((await db.select(db.washes).get()).single.place, 'Westside');
+    expect(summary.settings?.themeChoice, settings.themeChoice);
+    expect(summary.settings?.garageTitle, settings.garageTitle);
+    expect(summary.settings?.washChecklists, settings.washChecklists);
     final cars = await db.select(db.vehicles).get();
     expect(cars.map((v) => v.displayName), [
       'Toyota Corolla',

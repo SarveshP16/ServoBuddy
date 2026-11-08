@@ -195,6 +195,11 @@ void main() {
 
   testWidgets('add a service reminder from a preset', (tester) async {
     final app = await openCorolla(tester);
+    await tester.scrollUntilVisible(
+      find.text('Schedule'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.text('Schedule'));
     await app.settle(tester);
 

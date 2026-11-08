@@ -94,6 +94,15 @@
   tyres at 5 years or 40,000 km, whichever your driving reaches first.
 - They show in **Coming up** and send reminders as replacement nears.
 
+### Car wash
+- **Cleaning checklist**: Quick, Full clean or Detail, split into outside and
+  inside. Edit the lists and add your own steps.
+- **Paid washes logged for you**: an automatic, hand or detail wash goes into
+  Expenses as Car wash. Places are remembered with their last price, and wash
+  passes are supported.
+- **Wash history** per car with this year's count and spend, your usual gap
+  between washes, and an optional reminder.
+
 ### Home screen widget
 - The next thing due and this month's spend, on your home screen. Tap it to
   open that car.
@@ -132,6 +141,10 @@
 |:---:|:---:|:---:|:---:|
 | <img src="test/preview/17_rego_checklist.png" width="190"> | <img src="test/preview/16_home_rego.png" width="190"> | <img src="test/preview/18_tyres_battery.png" width="190"> | <img src="test/preview/5_log_expense.png" width="190"> |
 
+| Wash & clean | Cleaning checklist | Paid wash | Wash history |
+|:---:|:---:|:---:|:---:|
+| <img src="test/preview/19_wash_card.png" width="190"> | <img src="test/preview/20_wash_checklist.png" width="190"> | <img src="test/preview/21_paid_wash.png" width="190"> | <img src="test/preview/22_wash_history.png" width="190"> |
+
 | Vehicles | Recurring costs | Sold car |
 |:---:|:---:|:---:|
 | <img src="test/preview/13_vehicles_sold.png" width="190"> | <img src="test/preview/15_recurring_tab.png" width="190"> | <img src="test/preview/14_sold_detail.png" width="190"> |
@@ -168,12 +181,15 @@ ServoBuddy is an Android app (Android 7.0 or newer).
 7. **Record tyres and battery.** On the car's page, under **Tyres &
    battery**, tap **Set** and pick when they were fitted. For tyres, add the
    odometer then to get a distance estimate too.
-8. **Add the widget.** Long-press your home screen → **Widgets** →
+8. **Wash the car.** On the car's page, **Start a wash** for a checklist, or
+   **Log paid wash** for one you paid for (it's added to Expenses). Open
+   **Wash & clean** for history and to set a wash reminder.
+9. **Add the widget.** Long-press your home screen → **Widgets** →
    **ServoBuddy**.
-9. **Back up.** Settings → **Back up now**, and save the file somewhere safe.
+10. **Back up.** Settings → **Back up now**, and save the file somewhere safe.
    To restore, Settings → **Restore from backup** and pick the file. Restoring
    replaces everything on the phone.
-10. **Sold a car?** Edit it → **Mark as sold / not in use**. Its history stays.
+11. **Sold a car?** Edit it → **Mark as sold / not in use**. Its history stays.
 
 ## Build from source
 
@@ -262,7 +278,8 @@ lib/
     ├── reminders/  Reminder planning, green and pink slips, Coming up
     ├── service/    Service schedules and due estimates
     ├── settings/   Theme, Home title and preferences
-    └── vehicles/   Add, edit, sell and delete cars
+    ├── vehicles/   Add, edit, sell and delete cars
+    └── wash/       Cleaning checklists, paid washes, wash history
 ```
 
 Each feature is split into `domain/` (plain Dart logic), `data/`
@@ -282,6 +299,9 @@ Bug reports and ideas are welcome in
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for every release.
+
+**1.6.0** — Car wash: cleaning checklists, paid washes logged as expenses,
+wash history and wash reminders.
 
 **1.5.0** — Rego renewal checklist, tyre and battery ages, home screen
 widget, and titles with suggestions for every expense.

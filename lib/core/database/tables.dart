@@ -5,6 +5,7 @@ import '../../features/expenses/domain/recurrence.dart';
 import '../../features/vehicles/domain/body_type.dart';
 import '../../features/vehicles/domain/fuel_type.dart';
 import '../../features/vehicles/domain/vehicle_status.dart';
+import '../../features/wash/domain/wash_type.dart';
 
 /// All dates are stored as local calendar dates at midnight (the app never cares
 /// about time of day), except [Vehicles.createdAt].
@@ -43,6 +44,9 @@ class Vehicles extends Table {
   DateTimeColumn get tyresFitted => dateTime().nullable()();
   IntColumn get tyresFittedKm => integer().nullable()();
   DateTimeColumn get batteryFitted => dateTime().nullable()();
+
+  /// v5: remind to wash this many days after the last one; null = off.
+  IntColumn get washEveryDays => integer().nullable()();
 }
 
 /// Odometer readings typed in directly (when adding or editing a car). Fuel
@@ -126,4 +130,37 @@ class RecurringExpenses extends Table {
   DateTimeColumn get startDate => dateTime()();
   IntColumn get handledCount => integer().withDefault(const Constant(0))();
   BoolColumn get paused => boolean().withDefault(const Constant(false))();
+}
+
+/// v5: a wash, done at home with a checklist or paid for at a wash. A paid
+/// one is also an expense (Car wash), linked by [expenseId] so totals count
+/// it once; deleting that expense keeps the wash.
+@DataClassName('Wash')
+class Washes extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get vehicleId =>
+      integer().references(Vehicles, #id, onDelete: KeyAction.cascade)();
+  DateTimeColumn get date => dateTime()();
+  TextColumn get type => textEnum<WashType>()();
+
+  /// "Westside Car Wash". Remembered with its price for next time.
+  TextColumn get place => text().nullable()();
+  IntColumn get amountCents => integer().withDefault(const Constant(0))();
+
+  /// Paid with a wash pass (itself a recurring cost), so logged at $0.
+  BoolColumn get usedPass => boolean().withDefault(const Constant(false))();
+  IntColumn get expenseId => integer().nullable().references(
+    Expenses,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
+
+  /// The checklist used ("full"), and how much of it was ticked.
+  TextColumn get checklist => text().nullable()();
+  IntColumn get itemsDone => integer().nullable()();
+  IntColumn get itemsTotal => integer().nullable()();
+
+  /// How long it took, from Start to Finish.
+  IntColumn get minutes => integer().nullable()();
+  TextColumn get notes => text().nullable()();
 }

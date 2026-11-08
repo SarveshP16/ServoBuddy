@@ -7,6 +7,7 @@ import '../../expenses/domain/recurrence.dart';
 import '../../garage/domain/garage.dart';
 import '../../vehicles/domain/vehicle_labels.dart';
 import '../../vehicles/domain/wear_parts.dart';
+import '../../wash/domain/wash_history.dart';
 import 'nsw_slips.dart';
 
 /// Reminders go out at 9 am, this many days ahead and again on the day.
@@ -77,6 +78,18 @@ List<PlannedNotification> planReminders(Garage garage, DateTime now) {
         age.replaceBy,
         '$what due for replacing — $name',
         'Time to book it in.',
+      );
+    }
+
+    final washes = washHistory(garage, v.id);
+    if (nextWashDue(v, washes, garage.today) case final day?) {
+      final last = washes.firstOrNull;
+      at(
+        day,
+        'Time for a wash — $name',
+        last == null
+            ? 'Start one in ServoBuddy to tick off the checklist.'
+            : 'Last washed on ${formatDate(last.date)}.',
       );
     }
 

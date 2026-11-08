@@ -127,8 +127,9 @@ void main() {
   });
 
   group('database upgrades', () {
-    /// Today's schema rolled back to [version]: v4 added the tyre and battery
-    /// dates, v3 the vehicle status columns, v2 the recurring-costs table.
+    /// Today's schema rolled back to [version]: v5 added washes and the wash
+    /// reminder, v4 the tyre and battery dates, v3 the vehicle status
+    /// columns, v2 the recurring-costs table.
     Future<List<String>> schemaAt(int version) async {
       driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
       final fresh = AppDatabase(NativeDatabase.memory());
@@ -141,6 +142,7 @@ void main() {
           .get();
       await fresh.close();
       final dropped = [
+        if (version < 5) 'wash_every_days',
         if (version < 4) ...[
           'tyres_fitted',
           'tyres_fitted_km',
@@ -150,7 +152,8 @@ void main() {
       ];
       return [
         for (final (name, sql) in ddl)
-          if (!(version < 2 && name == 'recurring_expenses'))
+          if (!(version < 2 && name == 'recurring_expenses') &&
+              !(version < 5 && name == 'washes'))
             name == 'vehicles' && dropped.isNotEmpty
                 ? sql.replaceAll(
                     RegExp(',\\s*"(${dropped.join('|')})"[^,)]*'),
@@ -164,7 +167,7 @@ void main() {
       final ddl = await schemaAt(version);
       expect(
         ddl.firstWhere((s) => s.contains('"vehicles"')),
-        isNot(contains('tyres_fitted')),
+        isNot(contains('wash_every_days')),
       );
       return AppDatabase(
         NativeDatabase.memory(
@@ -183,8 +186,8 @@ void main() {
       );
     }
 
-    for (final version in [1, 2, 3]) {
-      test('v$version to v4 keeps cars, in use, no fitting dates', () async {
+    for (final version in [1, 2, 3, 4]) {
+      test('v$version to v5 keeps cars, in use, no fitting dates', () async {
         final db = await openOld(version);
         final car = (await db.select(db.vehicles).get()).single;
         expect(car.model, 'Corolla');
@@ -192,6 +195,8 @@ void main() {
         expect(car.soldDate, isNull);
         expect(car.tyresFitted, isNull);
         expect(car.batteryFitted, isNull);
+        expect(car.washEveryDays, isNull);
+        expect(await db.select(db.washes).get(), isEmpty);
         // v2's table exists either way.
         await db
             .into(db.recurringExpenses)
