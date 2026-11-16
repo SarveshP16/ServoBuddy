@@ -2,7 +2,7 @@ name: servobuddy
 description: "ServoBuddy - personal vehicle manager."
 publish_to: 'none'
 
-version: 1.6.0+5
+version: 1.6.1+6
 
 environment:
   sdk: ^3.13.2

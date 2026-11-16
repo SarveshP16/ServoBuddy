@@ -1,49 +1,40 @@
-import 'dart:math' as math;
-
 import '../../../core/database/app_database.dart';
 import '../../../core/utils/calendar.dart';
 
 enum DueStatus { ok, soon, overdue, unknown }
 
-/// How close a service is, and when it's likely to fall due.
+/// How close a service is, by the odometer.
+///
+/// Services fall due by km only: last service km plus the interval. A
+/// schedule's months (from before 1.6.1) are ignored.
 class ServiceDue {
   const ServiceDue({
     required this.schedule,
     required this.lastKm,
     required this.lastDate,
     required this.dueKm,
-    required this.dueDate,
     required this.kmLeft,
-    required this.daysLeftByDate,
     required this.estimatedDaysLeft,
     required this.status,
   });
 
-  /// Within this many km or days counts as "due soon".
+  /// Within this many km counts as "due soon".
   static const soonKm = 1000;
-  static const soonDays = 30;
 
   final ServiceSchedule schedule;
   final int? lastKm;
   final DateTime? lastDate;
   final int? dueKm;
-  final DateTime? dueDate;
 
   /// Negative once overdue.
   final int? kmLeft;
-  final int? daysLeftByDate;
 
-  /// The sooner of [daysLeftByDate] and how long [kmLeft] will take at the
-  /// car's usual pace. Null if neither is known.
+  /// How long [kmLeft] should take at the car's usual pace. Only for timing
+  /// reminders and ordering; never shown, since the due point is the km.
   final int? estimatedDaysLeft;
   final DueStatus status;
 
-  /// True when the date limit, not the km estimate, is what comes first — the
-  /// day count is then exact rather than approximate.
-  bool get dateBound =>
-      daysLeftByDate != null && daysLeftByDate == estimatedDaysLeft;
-
-  /// The day it's expected to fall due (for reminders).
+  /// The day the car should reach [dueKm] (for reminders).
   DateTime? estimatedDueDate(DateTime today) =>
       estimatedDaysLeft == null ? null : addDays(today, estimatedDaysLeft!);
 }
@@ -65,8 +56,8 @@ ServiceDue computeServiceDue({
     if (r.scheduleId != schedule.id) continue;
     if (lastDate == null || !r.date.isBefore(lastDate)) {
       lastDate = r.date;
-      // A record without a reading still resets the date; the km falls back
-      // to the best we already knew.
+      // A record without a reading still counts as the latest; the km falls
+      // back to the best we already knew.
       lastKm = r.odometerKm ?? lastKm;
     }
   }
@@ -74,51 +65,35 @@ ServiceDue computeServiceDue({
   final dueKm = (lastKm != null && schedule.intervalKm != null)
       ? lastKm + schedule.intervalKm!
       : null;
-  final dueDate = (lastDate != null && schedule.intervalMonths != null)
-      ? addMonths(lastDate, schedule.intervalMonths!)
-      : null;
-
   final kmLeft = (dueKm != null && currentKm != null)
       ? dueKm - currentKm
       : null;
-  final daysLeftByDate = dueDate != null ? daysBetween(today, dueDate) : null;
 
-  int? daysByKm;
+  int? estimatedDaysLeft;
   if (kmLeft != null && kmPerDay != null && kmPerDay > 0) {
-    daysByKm = kmLeft <= 0 ? 0 : (kmLeft / kmPerDay).ceil();
+    estimatedDaysLeft = kmLeft <= 0 ? 0 : (kmLeft / kmPerDay).ceil();
   }
-  final estimates = [?daysLeftByDate, ?daysByKm];
-  final estimatedDaysLeft = estimates.isEmpty
-      ? null
-      : estimates.reduce(math.min);
 
-  final DueStatus status;
-  if ((kmLeft != null && kmLeft <= 0) ||
-      (daysLeftByDate != null && daysLeftByDate < 0)) {
-    status = DueStatus.overdue;
-  } else if ((kmLeft != null && kmLeft <= ServiceDue.soonKm) ||
-      (estimatedDaysLeft != null && estimatedDaysLeft <= ServiceDue.soonDays)) {
-    status = DueStatus.soon;
-  } else if (kmLeft == null && daysLeftByDate == null) {
-    status = DueStatus.unknown;
-  } else {
-    status = DueStatus.ok;
-  }
+  final status = kmLeft == null
+      ? DueStatus.unknown
+      : kmLeft <= 0
+      ? DueStatus.overdue
+      : kmLeft <= ServiceDue.soonKm
+      ? DueStatus.soon
+      : DueStatus.ok;
 
   return ServiceDue(
     schedule: schedule,
     lastKm: lastKm,
     lastDate: lastDate,
     dueKm: dueKm,
-    dueDate: dueDate,
     kmLeft: kmLeft,
-    daysLeftByDate: daysLeftByDate,
     estimatedDaysLeft: estimatedDaysLeft,
     status: status,
   );
 }
 
-/// Most urgent first: overdue, then soonest expected, then fewest km left.
+/// Most urgent first: overdue, then soon, then fewest km left.
 int compareUrgency(ServiceDue a, ServiceDue b) {
   int rank(DueStatus s) => switch (s) {
     DueStatus.overdue => 0,
@@ -128,8 +103,6 @@ int compareUrgency(ServiceDue a, ServiceDue b) {
   };
   final byStatus = rank(a.status).compareTo(rank(b.status));
   if (byStatus != 0) return byStatus;
-  final byDays = _nullsLast(a.estimatedDaysLeft, b.estimatedDaysLeft);
-  if (byDays != 0) return byDays;
   return _nullsLast(a.kmLeft, b.kmLeft);
 }
 

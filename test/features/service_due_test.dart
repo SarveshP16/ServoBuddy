@@ -41,7 +41,7 @@ void main() {
   });
 
   group('computeServiceDue', () {
-    test("matches the mockup: oil change in 850 km, ~3 weeks", () {
+    test('matches the mockup: oil change in 850 km', () {
       final due = computeServiceDue(
         schedule: schedule(
           baselineKm: 33030,
@@ -53,27 +53,45 @@ void main() {
         today: today,
       );
       expect(due.kmLeft, 850);
+      // Only for timing the reminder, never shown.
       expect(due.estimatedDaysLeft, 22); // 850 / 40 rounded up.
       expect(due.status, DueStatus.soon);
-      expect(dueDetail(due), 'in 850 km · ~3 weeks');
+      expect(dueDetail(due), 'in 850 km · at 43,030 km');
+      expect(dueStatValue(due), '850 km');
       expect(dueHeadline(due), 'Oil change due');
     });
 
-    test('the date limit wins when it comes first', () {
+    test('only the km count: months and time passed are ignored', () {
+      // Last done a year ago, with a 12-month interval on the schedule.
       final due = computeServiceDue(
         schedule: schedule(
           baselineKm: 40000,
-          baselineDate: DateTime(2025, 10, 1),
+          baselineDate: DateTime(2025, 9, 1),
+          intervalMonths: 12,
         ),
         records: const [],
         currentKm: 42180,
         kmPerDay: 20,
         today: today,
       );
-      expect(due.dueDate, DateTime(2026, 10, 1));
-      expect(due.daysLeftByDate, 8);
-      expect(due.dateBound, isTrue);
-      expect(dueDetail(due), 'in 7,820 km · 8 days');
+      expect(due.status, DueStatus.ok);
+      expect(dueDetail(due), 'in 7,820 km · at 50,000 km');
+    });
+
+    test('unknown without a km interval', () {
+      final due = computeServiceDue(
+        schedule: schedule(
+          intervalKm: null,
+          baselineKm: 40000,
+          baselineDate: DateTime(2025, 1, 1),
+        ),
+        records: const [],
+        currentKm: 42180,
+        kmPerDay: 20,
+        today: today,
+      );
+      expect(due.status, DueStatus.unknown);
+      expect(dueStatValue(due), '—');
     });
 
     test('a later service record resets the clock', () {
@@ -104,7 +122,6 @@ void main() {
       );
       expect(due.lastKm, 41500);
       expect(due.dueKm, 51500);
-      expect(due.dueDate, DateTime(2027, 9, 1));
       expect(due.status, DueStatus.ok);
     });
 

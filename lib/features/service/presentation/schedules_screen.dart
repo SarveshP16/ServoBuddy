@@ -84,7 +84,7 @@ class SchedulesScreen extends ConsumerWidget {
                   if (dues.isEmpty)
                     Text(
                       'Add the services you want reminding about. Each is due '
-                      'every X km or Y months, whichever comes first.',
+                      'every so many km, counted from the last one.',
                       style: AppText.body.copyWith(color: c.muted),
                     ),
                   for (final d in dues) ...[
@@ -146,15 +146,15 @@ class _ScheduleRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final s = due.schedule;
-    final every = [
-      if (s.intervalKm != null) formatKm(s.intervalKm!),
-      if (s.intervalMonths != null)
-        '${s.intervalMonths} ${s.intervalMonths == 1 ? 'month' : 'months'}',
-    ].join(' or ');
+    final every = s.intervalKm == null
+        ? 'No km interval set'
+        : 'Every ${formatKm(s.intervalKm!)}';
     final alert =
         due.status == DueStatus.overdue || due.status == DueStatus.soon;
-    final status = due.status == DueStatus.unknown
-        ? 'Add when it was last done'
+    final status = s.intervalKm == null
+        ? 'Tap to set the km between services'
+        : due.status == DueStatus.unknown
+        ? 'Add the odometer at the last service'
         : '${due.status == DueStatus.overdue ? 'Overdue' : 'Due'} '
               '${dueDetail(due)}';
 
@@ -169,10 +169,7 @@ class _ScheduleRow extends StatelessWidget {
               children: [
                 Text(s.name, style: AppText.cardTitle.copyWith(color: c.ink)),
                 const SizedBox(height: 2),
-                Text(
-                  'Every $every',
-                  style: AppText.sub.copyWith(color: c.muted),
-                ),
+                Text(every, style: AppText.sub.copyWith(color: c.muted)),
                 const SizedBox(height: 4),
                 Text(
                   status,

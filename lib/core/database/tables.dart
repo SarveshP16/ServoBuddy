@@ -61,7 +61,8 @@ class OdometerReadings extends Table {
 }
 
 /// A recurring service: "every [intervalKm] km or [intervalMonths] months,
-/// whichever comes first". At least one interval is always set.
+/// whichever comes first". Since 1.6.1 services are due by km only, so
+/// [intervalMonths] is no longer set or used; the column stays for old data.
 class ServiceSchedules extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get vehicleId =>

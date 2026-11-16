@@ -73,10 +73,11 @@
 - See roughly what they add up to over a year.
 
 ### Service reminders
-- Each car has its own schedule of "every X km or Y months, whichever comes
-  first", with one-tap presets (logbook service, oil, tyres, brakes…).
-- Due dates are estimated from how fast your odometer is actually rising, so
-  "~3 weeks" adjusts as you drive more or less.
+- Each car has its own schedule of "every X km", counted from the last
+  service's odometer, with one-tap presets (logbook service, oil, tyres,
+  brakes…).
+- Due is shown in km only: "in 4,200 km · at 152,180 km". Reminders are
+  timed from how fast your odometer is actually rising.
 - Marking a service done logs it as an expense and resets the reminder.
 
 ### Rego renewal checklist
@@ -299,6 +300,9 @@ Bug reports and ideas are welcome in
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for every release.
+
+**1.6.1** — Services are due by km only, shown as "in 4,200 km · at
+152,180 km".
 
 **1.6.0** — Car wash: cleaning checklists, paid washes logged as expenses,
 wash history and wash reminders.

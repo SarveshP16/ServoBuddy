@@ -56,7 +56,6 @@ class _ScheduleEditorState extends ConsumerState<_ScheduleEditor> {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _km = TextEditingController();
-  final _months = TextEditingController();
   final _lastKm = TextEditingController();
   DateTime? _lastDate;
   String? _intervalError;
@@ -70,13 +69,11 @@ class _ScheduleEditorState extends ConsumerState<_ScheduleEditor> {
     if (s != null) {
       _name.text = s.name;
       _km.text = fmt(s.intervalKm);
-      _months.text = s.intervalMonths?.toString() ?? '';
       _lastKm.text = fmt(s.baselineKm);
       _lastDate = s.baselineDate;
     } else {
       _name.text = p?.name ?? '';
       _km.text = fmt(p?.km);
-      _months.text = p?.months?.toString() ?? '';
       // Most people add a schedule right after a service, so "now" is the
       // best guess; it's editable.
       _lastKm.text = fmt(widget.currentKm);
@@ -86,7 +83,7 @@ class _ScheduleEditorState extends ConsumerState<_ScheduleEditor> {
 
   @override
   void dispose() {
-    for (final c in [_name, _km, _months, _lastKm]) {
+    for (final c in [_name, _km, _lastKm]) {
       c.dispose();
     }
     super.dispose();
@@ -94,27 +91,22 @@ class _ScheduleEditorState extends ConsumerState<_ScheduleEditor> {
 
   Future<void> _save() async {
     final km = parseInt(_km.text);
-    final months = parseInt(_months.text);
     setState(
-      () => _intervalError =
-          (km == null || km == 0) && (months == null || months == 0)
-          ? 'Set a km interval, a months interval, or both.'
+      () => _intervalError = (km == null || km == 0)
+          ? 'Set how many km between services.'
           : null,
     );
     if (!_formKey.currentState!.validate() || _intervalError != null) return;
 
     final repo = ref.read(scheduleRepositoryProvider);
     final lastKm = parseInt(_lastKm.text);
-    final kmValue = (km == null || km == 0) ? null : km;
-    final monthsValue = (months == null || months == 0) ? null : months;
     final existing = widget.existing;
     if (existing == null) {
       await repo.add(
         ServiceSchedulesCompanion.insert(
           vehicleId: widget.vehicleId,
           name: _name.text.trim(),
-          intervalKm: Value(kmValue),
-          intervalMonths: Value(monthsValue),
+          intervalKm: Value(km),
           baselineKm: Value(lastKm),
           baselineDate: Value(_lastDate),
         ),
@@ -123,8 +115,9 @@ class _ScheduleEditorState extends ConsumerState<_ScheduleEditor> {
       await repo.save(
         existing.copyWith(
           name: _name.text.trim(),
-          intervalKm: Value(kmValue),
-          intervalMonths: Value(monthsValue),
+          intervalKm: Value(km),
+          // Services are due by km only; drop any months from before.
+          intervalMonths: const Value(null),
           baselineKm: Value(lastKm),
           baselineDate: Value(_lastDate),
         ),
@@ -160,39 +153,19 @@ class _ScheduleEditorState extends ConsumerState<_ScheduleEditor> {
                   (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
             const FormFieldLabel('Every'),
-            Row(
-              children: [
-                Expanded(
-                  child: AppTextField(
-                    controller: _km,
-                    hint: '10,000',
-                    suffixText: 'km',
-                    keyboardType: TextInputType.number,
-                    inputFormatters: numbers,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Text(
-                    'or',
-                    style: AppText.body.copyWith(color: c.muted),
-                  ),
-                ),
-                Expanded(
-                  child: AppTextField(
-                    controller: _months,
-                    hint: '12',
-                    suffixText: 'months',
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  ),
-                ),
-              ],
+            AppTextField(
+              controller: _km,
+              hint: '10,000',
+              suffixText: 'km',
+              keyboardType: TextInputType.number,
+              inputFormatters: numbers,
             ),
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(
-                _intervalError ?? 'Whichever comes first.',
+                _intervalError ??
+                    'Due when the odometer passes the last service plus '
+                        'this.',
                 style: AppText.sub.copyWith(
                   color: _intervalError == null ? c.muted : c.warn,
                 ),

@@ -369,9 +369,10 @@ class _SetUpScheduleCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   hasSchedules
-                      ? 'Add when each was last done to see what’s due.'
-                      : 'Oil changes, logbook services, tyres — every X km or '
-                            'Y months.',
+                      ? 'Add the odometer at each one’s last service to see '
+                            'what’s due.'
+                      : 'Oil changes, logbook services, tyres — every so '
+                            'many km.',
                   style: AppText.sub.copyWith(color: c.muted),
                 ),
               ],

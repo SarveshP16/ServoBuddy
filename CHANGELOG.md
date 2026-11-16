@@ -6,6 +6,16 @@ follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-11-16
+
+### Changed
+
+- **Services are due by km only.** A schedule is now "every X km" from the
+  last service's odometer, and due shows as "in 4,200 km · at 152,180 km",
+  with no days or weeks. The months part of existing schedules is ignored
+  and dropped when a schedule is edited. Reminders still arrive around when
+  your usual driving reaches the km.
+
 ## [1.6.0] - 2026-11-09
 
 Car wash: cleaning checklists, paid washes logged for you, and wash
@@ -268,7 +278,8 @@ First release.
 - Fuel prices sit behind a `FuelPriceSource` interface, so other states can be
   added later. The NSW client uses the v1 (NSW-only) endpoints.
 
-[Unreleased]: https://github.com/SarveshP16/ServoBuddy/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/SarveshP16/ServoBuddy/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/SarveshP16/ServoBuddy/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/SarveshP16/ServoBuddy/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/SarveshP16/ServoBuddy/compare/v1.2.0...v1.5.0
 [1.2.0]: https://github.com/SarveshP16/ServoBuddy/releases/tag/v1.2.0

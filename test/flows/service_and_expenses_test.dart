@@ -26,7 +26,7 @@ void main() {
     expect(find.text(r'$280'), findsOneWidget);
     expect(find.text(r'$50'), findsOneWidget);
     expect(find.text('Oil change due'), findsOneWidget);
-    expect(find.text('in 850 km · ~3 weeks'), findsOneWidget);
+    expect(find.text('in 850 km · at 43,030 km'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.text('Tyre rotation'),
@@ -55,7 +55,7 @@ void main() {
 
     expect(find.text('Service record saved'), findsOneWidget);
     // Next oil change is now 10,000 km on — no longer due soon.
-    expect(find.text('in 850 km · ~3 weeks'), findsNothing);
+    expect(find.text('in 850 km · at 43,030 km'), findsNothing);
     expect(find.text('Oil change due'), findsOneWidget);
     expect(find.textContaining('in 10,000 km'), findsOneWidget);
 
@@ -211,9 +211,8 @@ void main() {
     await tester.tap(find.text('Save'));
     await app.settle(tester);
 
-    expect(find.text('Every 10,000 km or 6 months'), findsOneWidget);
-    // 6 months comes before the ~216 days the km would take, so the date
-    // wins and is exact (no "~").
-    expect(find.text('Due in 10,000 km · 6 months'), findsOneWidget);
+    expect(find.text('Every 10,000 km'), findsNWidgets(2)); // Oil too.
+    // Km only: no days, weeks or months.
+    expect(find.text('Due in 10,000 km · at 52,180 km'), findsOneWidget);
   });
 }

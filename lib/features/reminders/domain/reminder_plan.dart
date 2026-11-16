@@ -97,15 +97,14 @@ List<PlannedNotification> planReminders(Garage garage, DateTime now) {
       final dueDay = due.estimatedDueDate(garage.today);
       if (dueDay == null) continue;
       final service = due.schedule.name;
-      final kmNote = due.dueKm == null ? '' : ' (at ${formatKm(due.dueKm!)})';
+      // Timed by your usual driving, but worded in km: that's what decides.
+      final atKm = due.dueKm == null ? '' : ' at ${formatKm(due.dueKm!)}';
       at(
         addDays(dueDay, -reminderLeadDays),
         '$service due soon — $name',
-        due.dateBound
-            ? '$service is due on ${formatDate(dueDay)}$kmNote.'
-            : '$service is due in about 2 weeks$kmNote.',
+        '$service is due$atKm.',
       );
-      at(dueDay, '$service due — $name', 'Time to book it in$kmNote.');
+      at(dueDay, '$service due — $name', 'Time to book it in$atKm.');
     }
   }
 
